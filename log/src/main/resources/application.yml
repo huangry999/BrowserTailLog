@@ -1,0 +1,30 @@
+spring:
+  profiles:
+    active: dev
+netty:
+  httpBlockMaxByte: 65535
+  ssl: false
+  port: 8081
+
+log:
+  path:
+    - "G:\\log"
+  suffix:
+    - "log"
+  recursive: true
+
+monitor:
+  intervalMs: 100
+---
+spring:
+  profiles: dev
+server:
+  port: 8080
+  address: 127.0.0.1
+
+---
+spring:
+  profiles:  prod
+server:
+  port: 80
+  address: 120.79.200.215
