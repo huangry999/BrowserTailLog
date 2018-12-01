@@ -1,7 +1,7 @@
 package com.log.socket.logp.head;
 
-import com.log.socket.logp.constants.Request;
-import com.log.socket.logp.constants.Sender;
+import com.log.socket.constants.Request;
+import com.log.socket.constants.Sender;
 
 public class ControlSignal {
     /**
@@ -28,11 +28,21 @@ public class ControlSignal {
         this.request = request;
     }
 
+    public ControlSignal(Request request) {
+        this();
+        this.request = request;
+    }
+
+    public ControlSignal() {
+        this.sender = Sender.SERVER;
+        this.request = Request.NONE;
+    }
+
     @Override
     public String toString() {
         return "ControlSignal{" +
                 "sender=" + sender +
-                ", request=" + request +
+                ", handler=" + request +
                 '}';
     }
 

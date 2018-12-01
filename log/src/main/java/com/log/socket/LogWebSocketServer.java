@@ -10,6 +10,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.InetSocketAddress;
@@ -26,7 +27,6 @@ public class LogWebSocketServer {
      * start netty service
      *
      * @param address bind address
-     * @return service channel future
      * @throws Exception
      */
     public void start(InetSocketAddress address) throws Exception {

@@ -1,6 +1,6 @@
 package com.log.socket.logp.head;
 
-import com.log.socket.decode.DecodeException;
+import com.log.socket.codec.codecException;
 
 public class StartFlag {
     /**
@@ -11,7 +11,7 @@ public class StartFlag {
     /**
      * value of start flag
      */
-    public final static short START_FLAG = 0x112c;
+    public final static short START_FLAG = 4396;
 
     private short value;
 
@@ -26,7 +26,7 @@ public class StartFlag {
      */
     public StartFlag check() {
         if (this.value != START_FLAG) {
-            throw new DecodeException("Start flag is invalid: " + this.value);
+            throw new codecException("Start flag is invalid: " + this.value);
         }
         return this;
     }

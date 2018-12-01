@@ -1,13 +1,13 @@
 package com.log.socket.logp.head;
 
-public class DataPackageSize {
+public class Size {
     /**
      * size of data package size, byte
      */
     public final static int SIZE = 2;
     private short value;
 
-    public DataPackageSize(short value) {
+    public Size(short value) {
         this.value = value;
     }
 
@@ -18,7 +18,7 @@ public class DataPackageSize {
 
     @Override
     public String toString() {
-        return "DataPackageSize{" +
+        return "Size{" +
                 "value=" + value +
                 '}';
     }
@@ -28,7 +28,7 @@ public class DataPackageSize {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DataPackageSize size = (DataPackageSize) o;
+        Size size = (Size) o;
 
         return value == size.value;
     }

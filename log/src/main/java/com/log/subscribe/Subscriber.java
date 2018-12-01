@@ -1,12 +1,34 @@
 package com.log.subscribe;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import java.io.File;
 
 public class Subscriber {
-    private File log;
+    private final File log;
+    private long readIndex;
+    private final ChannelHandlerContext context;
+
     private SubscribeEventHandler modifyHandler;
     private SubscribeEventHandler deleteHandler;
     private SubscribeEventHandler createHandler;
+
+    public Subscriber(File log, ChannelHandlerContext context) {
+        this.log = log;
+        this.context = context;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return context;
+    }
+
+    public long getReadIndex() {
+        return readIndex;
+    }
+
+    public void setReadIndex(long readIndex) {
+        this.readIndex = readIndex;
+    }
 
     public SubscribeEventHandler getModifyHandler() {
         return modifyHandler;
@@ -30,10 +52,6 @@ public class Subscriber {
 
     public void setCreateHandler(SubscribeEventHandler createHandler) {
         this.createHandler = createHandler;
-    }
-
-    public Subscriber(File log) {
-        this.log = log;
     }
 
     public File getLog() {

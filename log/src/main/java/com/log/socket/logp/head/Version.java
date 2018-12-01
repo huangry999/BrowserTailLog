@@ -1,6 +1,6 @@
 package com.log.socket.logp.head;
 
-public class ProtocolVersion {
+public class Version {
     /**
      * size of protocol version, byte
      */
@@ -26,7 +26,7 @@ public class ProtocolVersion {
 
     @Override
     public String toString() {
-        return "ProtocolVersion{" +
+        return "Version{" +
                 "mainVersion=" + mainVersion +
                 ", subVersion=" + subVersion +
                 '}';
@@ -37,7 +37,7 @@ public class ProtocolVersion {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ProtocolVersion version = (ProtocolVersion) o;
+        Version version = (Version) o;
 
         if (mainVersion != version.mainVersion) return false;
         return subVersion == version.subVersion;

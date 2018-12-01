@@ -1,10 +1,8 @@
 package com.log.socket.codec;
 
-import com.log.socket.decode.LogProtocolDecode;
-import com.log.socket.encode.LogProtocolEncode;
-import com.log.socket.logp.constants.Mode;
-import com.log.socket.logp.constants.Request;
-import com.log.socket.logp.constants.Sender;
+import com.log.socket.constants.Mode;
+import com.log.socket.constants.Request;
+import com.log.socket.constants.Sender;
 import com.log.socket.logp.head.*;
 import com.log.util.PrintUtils;
 import org.junit.Test;
@@ -17,7 +15,7 @@ public class LogProtocolCodecTest {
         FrameHead head = new FrameHead();
         head.setStartFlag(new StartFlag(StartFlag.START_FLAG));
 
-        ProtocolVersion version = new ProtocolVersion();
+        Version version = new Version();
         version.setSubVersion((short)1);
         version.setMainVersion((short)1);
         head.setVersion(version);
@@ -34,16 +32,15 @@ public class LogProtocolCodecTest {
 
         head.setMode(Mode.MODIFY);
 
-        head.setDataPackageSize(new DataPackageSize((short)2324));
+        head.setSize(new Size((short)2324));
 
         head.setChecksum(new Checksum((short)0));
 
-        LogProtocolEncode encode = new LogProtocolEncode();
-        byte[] bytes = encode.encodeHead(head);
+        LogProtocolCodec codec = new LogProtocolCodec();
+        byte[] bytes = codec.encodeHead(head);
         System.out.println(PrintUtils.toString(bytes));
 
-        LogProtocolDecode decode = new LogProtocolDecode();
-        FrameHead headDec = decode.decodeHead(bytes);
+        FrameHead headDec = codec.decodeHead(bytes);
         System.out.println(headDec);
 
         assertEquals(head.hashCode(), headDec.hashCode());

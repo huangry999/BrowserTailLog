@@ -1,8 +1,9 @@
-package com.log.socket.logp.constants;
+package com.log.socket.constants;
 
 import java.util.Arrays;
 
 public enum Mode {
+    NONE(0x0),
     DELETE(0x1),
     CREATE(0x2),
     MODIFY(0x3),;

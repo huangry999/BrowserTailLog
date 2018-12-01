@@ -7,6 +7,8 @@ import com.log.logmonitor.monitor.MonitorParameter;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
@@ -23,13 +25,13 @@ public class CommonIoMonitorFactory implements MonitorFactory {
 
 class CommonIoMonitor implements Monitor {
     private FileAlterationMonitor monitor;
-
+    private static final Logger logger = LoggerFactory.getLogger(CommonIoMonitorFactory.class);
 
     CommonIoMonitor(MonitorParameter parameter, int intervalMs) {
         monitor = new FileAlterationMonitor(intervalMs);
         if (parameter.getRoots() != null && !parameter.getRoots().isEmpty())
             for (String path : parameter.getRoots()) {
-                FileAlterationObserver observer = new FileAlterationObserver(new File(path), parameter.getFileFilter());
+                FileAlterationObserver observer = new FileAlterationObserver(path, parameter.getFileFilter());
                 final MonitorListener listener = parameter.getMonitorListener();
                 if (listener != null) {
                     observer.addListener(new FileAlterationListener() {
@@ -61,7 +63,11 @@ class CommonIoMonitor implements Monitor {
 
                         @Override
                         public void onFileChange(File file) {
-                            listener.onFileChange(file);
+                            if (file.exists()){
+                                listener.onFileModify(file);
+                            }else{
+                                listener.onFileDelete(file);
+                            }
                         }
 
                         @Override
@@ -76,12 +82,15 @@ class CommonIoMonitor implements Monitor {
                     });
                 }
                 this.monitor.addObserver(observer);
+                logger.debug("add {} to monitor", path);
+
             }
     }
 
     @Override
     public void start() throws Exception {
         this.monitor.start();
+        logger.debug("monitor start");
     }
 
     @Override

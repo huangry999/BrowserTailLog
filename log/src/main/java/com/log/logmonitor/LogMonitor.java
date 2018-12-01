@@ -5,49 +5,52 @@ import com.log.logmonitor.monitor.Monitor;
 import com.log.logmonitor.monitor.MonitorFactory;
 import com.log.logmonitor.monitor.MonitorListener;
 import com.log.logmonitor.monitor.MonitorParameter;
-import com.log.subscribe.SubscribeEventHandler;
+import com.log.subscribe.Subscriber;
 import com.log.subscribe.SubscriberManager;
-import com.log.util.SpringUtils;
-import org.apache.commons.io.filefilter.OrFileFilter;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.filefilter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.nio.file.StandardWatchEventKinds;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+@Component
 public class LogMonitor {
     private final static Logger logger = LoggerFactory.getLogger(LogMonitor.class);
-    private ExecutorService subscribeExecutorService;
-    private SubscriberManager subscriberManager;
+    private ExecutorService executorService;
     private Monitor monitor;
 
     /**
      * release resources
      */
     public void destroy() {
-        if (this.subscribeExecutorService != null) {
-            this.subscribeExecutorService.shutdown();
+        if (this.executorService != null) {
+            this.executorService.shutdown();
         }
     }
 
-    public LogMonitor() {
-        subscribeExecutorService = Executors.newCachedThreadPool();
-        subscriberManager = SpringUtils.get(SubscriberManager.class);
-        LogFileProperties logFileProperties = SpringUtils.get(LogFileProperties.class);
-        MonitorFactory factory = SpringUtils.get(MonitorFactory.class);
+    @Autowired
+    public LogMonitor(SubscriberManager subscriberManager, MonitorFactory factory, LogFileProperties logFileProperties) {
+        executorService = Executors.newCachedThreadPool();
 
         //init monitor
         MonitorParameter parameter = new MonitorParameter();
         parameter.setRoots(logFileProperties.getPath());
-        parameter.setFileFilter(new OrFileFilter(
+        IOFileFilter filter = new OrFileFilter(
                 logFileProperties.getSuffix()
                         .stream()
                         .map(SuffixFileFilter::new)
-                        .collect(Collectors.toList())));
+                        .collect(Collectors.toList()));
+        if (logFileProperties.isRecursive()) {
+            filter = new OrFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+        } else {
+            filter = new AndFileFilter(FileFileFilter.FILE, filter);
+        }
+        parameter.setFileFilter(filter);
         parameter.setMonitorListener(new MonitorListener() {
             @Override
             public void onDirectoryCreate(File directory) {
@@ -66,22 +69,28 @@ public class LogMonitor {
 
             @Override
             public void onFileCreate(File file) {
-                for (SubscribeEventHandler handler : subscriberManager.getListener(file, StandardWatchEventKinds.ENTRY_CREATE)) {
-                    subscribeExecutorService.submit(() -> handler.handle(file));
+                for (Subscriber s : subscriberManager.getSubscribers(file)) {
+                    if (s.getCreateHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getCreateHandler().handle(s));
                 }
             }
 
             @Override
-            public void onFileChange(File file) {
-                for (SubscribeEventHandler handler : subscriberManager.getListener(file, StandardWatchEventKinds.ENTRY_MODIFY)) {
-                    subscribeExecutorService.submit(() -> handler.handle(file));
+            public void onFileModify(File file) {
+                for (Subscriber s : subscriberManager.getSubscribers(file)) {
+                    if (s.getModifyHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getModifyHandler().handle(s));
                 }
             }
 
             @Override
             public void onFileDelete(File file) {
-                for (SubscribeEventHandler handler : subscriberManager.getListener(file, StandardWatchEventKinds.ENTRY_DELETE)) {
-                    subscribeExecutorService.submit(() -> handler.handle(file));
+                for (Subscriber s : subscriberManager.getSubscribers(file)) {
+                    if (s.getDeleteHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getDeleteHandler().handle(s));
                 }
             }
         });
@@ -94,6 +103,7 @@ public class LogMonitor {
     public void startAsync() {
         try {
             this.monitor.start();
+            logger.info("monitor start successfully");
         } catch (Exception e) {
             logger.error("start monitor error. ", e);
         }

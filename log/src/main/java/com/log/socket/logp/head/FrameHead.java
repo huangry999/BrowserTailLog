@@ -1,6 +1,6 @@
 package com.log.socket.logp.head;
 
-import com.log.socket.logp.constants.Mode;
+import com.log.socket.constants.Mode;
 
 public class FrameHead {
     /**
@@ -9,8 +9,8 @@ public class FrameHead {
     public final static int SIZE = 10;
 
     private StartFlag startFlag;
-    private DataPackageSize dataPackageSize;
-    private ProtocolVersion version;
+    private Size size;
+    private Version version;
     private Level level;
     private ControlSignal controlSignal;
     private Mode mode;
@@ -24,11 +24,11 @@ public class FrameHead {
         this.startFlag = startFlag;
     }
 
-    public ProtocolVersion getVersion() {
+    public Version getVersion() {
         return version;
     }
 
-    public void setVersion(ProtocolVersion version) {
+    public void setVersion(Version version) {
         this.version = version;
     }
 
@@ -56,12 +56,12 @@ public class FrameHead {
         this.level = level;
     }
 
-    public DataPackageSize getDataPackageSize() {
-        return dataPackageSize;
+    public Size getSize() {
+        return size;
     }
 
-    public void setDataPackageSize(DataPackageSize dataPackageSize) {
-        this.dataPackageSize = dataPackageSize;
+    public void setSize(Size size) {
+        this.size = size;
     }
 
     public void setChecksum(Checksum checksum) {
@@ -85,7 +85,7 @@ public class FrameHead {
             return false;
         if (mode != head.mode) return false;
         if (level != null ? !level.equals(head.level) : head.level != null) return false;
-        return dataPackageSize != null ? dataPackageSize.equals(head.dataPackageSize) : head.dataPackageSize == null;
+        return size != null ? size.equals(head.size) : head.size == null;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class FrameHead {
         result = 31 * result + (controlSignal != null ? controlSignal.hashCode() : 0);
         result = 31 * result + (mode != null ? mode.hashCode() : 0);
         result = 31 * result + (level != null ? level.hashCode() : 0);
-        result = 31 * result + (dataPackageSize != null ? dataPackageSize.hashCode() : 0);
+        result = 31 * result + (size != null ? size.hashCode() : 0);
         return result;
     }
 
@@ -107,7 +107,7 @@ public class FrameHead {
                 ", controlSignal=" + controlSignal +
                 ", mode=" + mode +
                 ", level=" + level +
-                ", dataPackageSize=" + dataPackageSize +
+                ", size=" + size +
                 ", checksum=" + checksum +
                 '}';
     }

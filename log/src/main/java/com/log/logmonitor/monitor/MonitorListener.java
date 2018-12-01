@@ -36,11 +36,11 @@ public interface MonitorListener {
     void onFileCreate(final File file);
 
     /**
-     * File changed Event.
+     * File modify Event.
      *
      * @param file The file changed
      */
-    void onFileChange(final File file);
+    void onFileModify(final File file);
 
     /**
      * File deleted Event.

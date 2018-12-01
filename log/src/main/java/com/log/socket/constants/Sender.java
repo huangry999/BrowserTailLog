@@ -1,4 +1,4 @@
-package com.log.socket.logp.constants;
+package com.log.socket.constants;
 
 public enum Sender {
     SERVER(false),

@@ -5,16 +5,18 @@ netty:
   httpBlockMaxByte: 65535
   ssl: false
   port: 8081
+  address: 192.168.1.101
 
 log:
   path:
     - "G:\\log"
   suffix:
-    - "log"
+    - ".log"
   recursive: true
+  windowSize: 1000
 
 monitor:
-  intervalMs: 100
+  intervalMs: 10000
 ---
 spring:
   profiles: dev
