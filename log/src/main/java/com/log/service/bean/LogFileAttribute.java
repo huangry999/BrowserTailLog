@@ -1,15 +1,18 @@
 package com.log.service.bean;
 
+import com.log.constant.CodedConstant;
+import com.log.constant.FileType;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.io.File;
 import java.util.Date;
 
-public class LogFileAttribute {
+public class LogFileAttribute implements Comparable<LogFileAttribute> {
     private String path;
     private String modifyUtcTime;
     private String name;
-    private boolean isDir;
+    private int type;
+    private Long size;
 
     /**
      * Parse by a file
@@ -22,21 +25,19 @@ public class LogFileAttribute {
         if (!file.exists()) {
             return result;
         }
-        result.isDir = file.isDirectory();
-        result.path = file.getParentFile().toPath().toString();
+        result.type = (file.isDirectory() ? FileType.DIRECTORY : FileType.LOG_FILE).getCode();
+        result.path = file.toPath().toString();
         result.name = file.getName();
         Date md = new Date(file.lastModified());
         result.modifyUtcTime = DateFormatUtils.format(md, "yyyy-MM-dd'T'HH:mm'Z'");
+        if (!file.isDirectory()) {
+            result.size = file.length();
+        }
         return result;
     }
 
-    /**
-     * Boolean of if is directory
-     *
-     * @return true if it's directory
-     */
-    public boolean isDir() {
-        return isDir;
+    public int getType() {
+        return type;
     }
 
     /**
@@ -64,5 +65,17 @@ public class LogFileAttribute {
      */
     public String getName() {
         return name;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    @Override
+    public int compareTo(LogFileAttribute o) {
+        if (this.type == o.type) {
+            return this.name.compareTo(o.name);
+        }
+        return CodedConstant.valueOf(this.type, FileType.values(), null) == FileType.DIRECTORY ? -1 : 1;
     }
 }

@@ -1,6 +1,9 @@
 package com.log.socket.logp.head;
 
 import com.log.socket.constants.Mode;
+import com.log.socket.constants.Request;
+import com.log.socket.constants.Respond;
+import com.log.socket.constants.Sender;
 
 public class FrameHead {
     /**
@@ -11,8 +14,9 @@ public class FrameHead {
     private StartFlag startFlag;
     private Size size;
     private Version version;
-    private Level level;
-    private ControlSignal controlSignal;
+    private Sender sender;
+    private Respond respond;
+    private Request request;
     private Mode mode;
     private Checksum checksum;
 
@@ -32,12 +36,40 @@ public class FrameHead {
         this.version = version;
     }
 
-    public ControlSignal getControlSignal() {
-        return controlSignal;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FrameHead head = (FrameHead) o;
+
+        if (!startFlag.equals(head.startFlag)) return false;
+        if (!size.equals(head.size)) return false;
+        if (!version.equals(head.version)) return false;
+        if (sender != head.sender) return false;
+        if (respond != head.respond) return false;
+        if (request != head.request) return false;
+        return mode == head.mode;
     }
 
-    public void setControlSignal(ControlSignal controlSignal) {
-        this.controlSignal = controlSignal;
+    @Override
+    public int hashCode() {
+        int result = startFlag.hashCode();
+        result = 31 * result + size.hashCode();
+        result = 31 * result + version.hashCode();
+        result = 31 * result + sender.hashCode();
+        result = 31 * result + (respond != null ? respond.hashCode() : 0);
+        result = 31 * result + (request != null ? request.hashCode() : 0);
+        result = 31 * result + (mode != null ? mode.hashCode() : 0);
+        return result;
+    }
+
+    public Respond getRespond() {
+        return respond;
+    }
+
+    public void setRespond(Respond respond) {
+        this.respond = respond;
     }
 
     public Mode getMode() {
@@ -48,13 +80,6 @@ public class FrameHead {
         this.mode = mode;
     }
 
-    public Level getLevel() {
-        return level;
-    }
-
-    public void setLevel(Level level) {
-        this.level = level;
-    }
 
     public Size getSize() {
         return size;
@@ -72,43 +97,33 @@ public class FrameHead {
         return checksum;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        FrameHead head = (FrameHead) o;
-
-        if (startFlag != null ? !startFlag.equals(head.startFlag) : head.startFlag != null) return false;
-        if (version != null ? !version.equals(head.version) : head.version != null) return false;
-        if (controlSignal != null ? !controlSignal.equals(head.controlSignal) : head.controlSignal != null)
-            return false;
-        if (mode != head.mode) return false;
-        if (level != null ? !level.equals(head.level) : head.level != null) return false;
-        return size != null ? size.equals(head.size) : head.size == null;
+    public Sender getSender() {
+        return sender;
     }
 
-    @Override
-    public int hashCode() {
-        int result = startFlag != null ? startFlag.hashCode() : 0;
-        result = 31 * result + (version != null ? version.hashCode() : 0);
-        result = 31 * result + (controlSignal != null ? controlSignal.hashCode() : 0);
-        result = 31 * result + (mode != null ? mode.hashCode() : 0);
-        result = 31 * result + (level != null ? level.hashCode() : 0);
-        result = 31 * result + (size != null ? size.hashCode() : 0);
-        return result;
+    public void setSender(Sender sender) {
+        this.sender = sender;
     }
 
     @Override
     public String toString() {
         return "FrameHead{" +
                 "startFlag=" + startFlag +
-                ", version=" + version +
-                ", controlSignal=" + controlSignal +
-                ", mode=" + mode +
-                ", level=" + level +
                 ", size=" + size +
+                ", version=" + version +
+                ", sender=" + sender +
+                ", respond=" + respond +
+                ", request=" + request +
+                ", mode=" + mode +
                 ", checksum=" + checksum +
                 '}';
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public void setRequest(Request request) {
+        this.request = request;
     }
 }

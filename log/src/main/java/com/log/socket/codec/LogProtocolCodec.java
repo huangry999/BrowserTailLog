@@ -2,6 +2,7 @@ package com.log.socket.codec;
 
 import com.log.socket.constants.Mode;
 import com.log.socket.constants.Request;
+import com.log.socket.constants.Respond;
 import com.log.socket.constants.Sender;
 import com.log.socket.logp.LogP;
 import com.log.socket.logp.head.*;
@@ -14,6 +15,8 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
 import java.nio.charset.Charset;
@@ -24,6 +27,7 @@ import static com.log.socket.logp.head.FrameHead.SIZE;
 public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame, LogP> {
     private int lengthFieldEndOffset;
     public static final Charset CHARSET = Charset.forName("utf-8");
+    private static final Logger logger = LoggerFactory.getLogger(LogProtocolCodec.class);
 
     public LogProtocolCodec() {
         lengthFieldEndOffset = StartFlag.SIZE + Size.SIZE;
@@ -35,6 +39,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         BinaryWebSocketFrame respond = new BinaryWebSocketFrame();
         respond.content().writeBytes(head);
         respond.content().writeCharSequence(msg.getBody(), CHARSET);
+        logger.debug("encode frame: {}", msg);
         out.add(respond);
     }
 
@@ -53,8 +58,11 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         start += StartFlag.SIZE;
 
         //encode size
-        Conversion.shortToByteArray(head.getSize().getValue(), 0, result, start, Size.SIZE);
+        if (head.getSize() != null){
+            Conversion.shortToByteArray(head.getSize().getValue(), 0, result, start, Size.SIZE);
+        }
         start += Size.SIZE;
+
 
         //encode version
         boolean[] versionBinary = new boolean[Version.SIZE * 8];
@@ -65,21 +73,23 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         result[start] = Conversion.binaryToByte(versionBinary, 0, (byte) 0, 8);
         start += Version.SIZE;
 
-        //encode level
-        boolean[] levelBinary = new boolean[Level.SIZE * 8];
-        short tv = head.getLevel().getTotal();
-        short cv = head.getLevel().getCurrent();
-        Conversion.shortToBinary(tv, 12, levelBinary, 0, 4);
-        Conversion.shortToBinary(cv, 12, levelBinary, 4, 4);
-        result[start] = Conversion.binaryToByte(levelBinary, 0, (byte) 0, 8);
-        start += Level.SIZE;
+        //encode sender
+        result[start] = Conversion.intToByteArray(head.getSender().getCode(), 24, new byte[1], 0, Sender.SIZE)[0];
+        start += Sender.SIZE;
 
         //encode control signal
-        boolean[] controlBinary = new boolean[ControlSignal.SIZE * 8];
-        controlBinary[0] = head.getControlSignal().getSender().getFlag();
-        Conversion.intToBinary(head.getControlSignal().getRequest().getFlag(), 25, controlBinary, 1, 7);
-        result[start] = Conversion.binaryToByte(controlBinary, 0, (byte) 0, 8);
-        start += ControlSignal.SIZE;
+        switch (head.getSender()) {
+            case CLIENT:
+                result[start] = Conversion.intToByteArray(head.getRequest().getCode(), 24, new byte[1], 0, Request.SIZE)[0];
+                start += Request.SIZE;
+                break;
+            case SERVER:
+                result[start] = Conversion.intToByteArray(head.getRespond().getCode(), 24, new byte[1], 0, Respond.SIZE)[0];
+                start += Respond.SIZE;
+                break;
+            default:
+                throw new IllegalArgumentException("Not support sender: " + head.getSender());
+        }
 
         //encode mode
         result[start] = Conversion.intToByteArray(head.getMode().getFlag(), 24, new byte[1], 0, Mode.SIZE)[0];
@@ -89,6 +99,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         Conversion.intToByteArray(checksum, 16, result, start, Checksum.SIZE);
         start += Checksum.SIZE;
         Validate.isTrue(start == FrameHead.SIZE);
+
         return result;
     }
 
@@ -115,6 +126,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         logP.setHead(head);
         String body = in.readCharSequence(head.getSize().getValue() - SIZE, CHARSET).toString();
         logP.setBody(body);
+        logger.debug("decode: {}", logP);
         out.add(logP);
     }
 
@@ -171,23 +183,22 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         head.setVersion(version);
 
         //parse data level
-        boolean[] levelBit = new boolean[8];
-        Conversion.byteToBinary(headBytes[start], 0, levelBit, 0, Level.SIZE * 8);
-        start += Level.SIZE;
-        Level level = new Level();
-        level.setTotal(Conversion.binaryToShort(levelBit, 0, (short) 0, 4));
-        level.setCurrent(Conversion.binaryToShort(levelBit, 4, (short) 0, 4));
-        head.setLevel(level);
+        head.setSender(Sender.valueOf((int) headBytes[start]));
+        start += Sender.SIZE;
 
         //parse control signal
-        boolean[] controlBit = new boolean[8];
-        Conversion.byteToBinary(headBytes[start], 0, controlBit, 0, ControlSignal.SIZE * 8);
-        start += ControlSignal.SIZE;
-        ControlSignal controlSignal = new ControlSignal();
-        controlSignal.setSender(Sender.valueOf(controlBit[0]));
-        int requestFlag = Conversion.binaryToInt(controlBit, 1, 0, 7);
-        controlSignal.setRequest(Request.valueOf(requestFlag));
-        head.setControlSignal(controlSignal);
+        switch (head.getSender()) {
+            case CLIENT:
+                head.setRequest(Request.valueOf((int) headBytes[start]));
+                start += Request.SIZE;
+                break;
+            case SERVER:
+                head.setRespond(Respond.valueOf((int) headBytes[start]));
+                start += Request.SIZE;
+                break;
+            default:
+                throw new IllegalArgumentException("Not support sender: " + head.getSender());
+        }
 
         //parse mode
         head.setMode(Mode.valueOf(headBytes[start]));

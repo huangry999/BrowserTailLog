@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.socket.codec.LogProtocolCodec;
 import com.log.socket.constants.Mode;
 import com.log.socket.constants.Request;
+import com.log.socket.constants.Respond;
 import com.log.socket.constants.Sender;
 import com.log.socket.logp.head.*;
 import io.netty.handler.codec.CodecException;
@@ -39,14 +40,8 @@ public class LogPFactory {
         version.setMainVersion((short) 1);
         version.setSubVersion((short) 1);
         head.setVersion(version);
-        Level level = new Level();
-        level.setCurrent((short) 1);
-        level.setTotal((short) 1);
-        head.setLevel(level);
-        ControlSignal signal = new ControlSignal();
-        signal.setSender(Sender.SERVER);
-        signal.setRequest(Request.NONE);
-        head.setControlSignal(signal);
+        head.setSender(Sender.SERVER);
+        head.setRespond(Respond.NONE);
         head.setMode(Mode.NONE);
         return factory;
     }
@@ -68,13 +63,18 @@ public class LogPFactory {
         return this;
     }
 
-    public LogPFactory setLevel(Level level) {
-        this.logP.getHead().setLevel(level);
+    public LogPFactory setSender(Sender sender) {
+        this.logP.getHead().setSender(sender);
         return this;
     }
 
-    public LogPFactory setControlSignal(ControlSignal controlSignal) {
-        this.logP.getHead().setControlSignal(controlSignal);
+    public LogPFactory setRespond(Respond respond) {
+        this.logP.getHead().setRespond(respond);
+        return this;
+    }
+
+    public LogPFactory setRequest(Request request) {
+        this.logP.getHead().setRequest(request);
         return this;
     }
 
@@ -91,7 +91,7 @@ public class LogPFactory {
      * @return factory
      */
     public LogPFactory addData(String field, Object data) {
-        if (Strings.isBlank(field)) {
+        if (Strings.isBlank(field) || data == null) {
             return this;
         }
         dataMap.put(field, data);
@@ -103,19 +103,24 @@ public class LogPFactory {
      *
      * @return frame
      */
-    public LogP create() throws JsonProcessingException {
-        FrameHead head = this.logP.getHead();
+    public LogP create() {
         ObjectMapper objectMapper = new ObjectMapper();
-        String bodyStr = objectMapper.writeValueAsString(this.dataMap);
+        String bodyStr;
+        try {
+            bodyStr = objectMapper.writeValueAsString(this.dataMap);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         this.logP.setBody(bodyStr);
 
+        /*FrameHead head = this.logP.getHead();
         ByteBuffer byteBuffer = LogProtocolCodec.CHARSET.encode(bodyStr);
         int bodySize = byteBuffer.limit();
         int size = FrameHead.SIZE + bodySize;
         if (size > (Math.pow(2, Size.SIZE * 8))) {
-            throw new CodecException("total size is grate than maximum");
+            throw new CodecException(String.format("total size %s is grate than maximum %s", size, Math.pow(2, Size.SIZE * 8)));
         }
-        head.setSize(new Size((short) size));
+        head.setSize(new Size((short) size));*/
         return this.logP;
     }
 

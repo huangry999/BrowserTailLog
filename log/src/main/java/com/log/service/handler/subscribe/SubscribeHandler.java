@@ -1,16 +1,16 @@
 package com.log.service.handler.subscribe;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.log.service.bean.LogLineText;
 import com.log.service.handler.BasicRequestHandler;
 import com.log.service.handler.CommonRequest;
 import com.log.socket.codec.LogProtocolCodec;
 import com.log.socket.constants.Mode;
-import com.log.socket.constants.Request;
+import com.log.socket.constants.Respond;
 import com.log.socket.logp.LogP;
 import com.log.socket.logp.LogPFactory;
-import com.log.socket.logp.head.ControlSignal;
 import com.log.subscribe.Subscriber;
 import com.log.subscribe.SubscriberManager;
+import com.log.util.FileUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class SubscribeHandler extends BasicRequestHandler {
@@ -31,7 +30,7 @@ public class SubscribeHandler extends BasicRequestHandler {
     private final SubscriberManager subscriberManager;
 
     @Value("${log.windowSize}")
-    private int windowSize;
+    private long windowSize;
 
     @Autowired
     public SubscribeHandler(SubscriberManager subscriberManager) {
@@ -50,23 +49,21 @@ public class SubscribeHandler extends BasicRequestHandler {
         Subscriber subscriber = new Subscriber(file, ctx);
         subscriber.setModifyHandler(s -> {
             try {
-                List<String> content = Files.lines(s.getLog().toPath(), LogProtocolCodec.CHARSET)
-                        .skip(s.getReadIndex())
-                        .limit(windowSize)
-                        .collect(Collectors.toList());
+                List<LogLineText> contents = FileUtils.getLogText(s.getFile(), s.getReadIndex(), windowSize);
                 logger.debug("{} change, will send content lines skip {} and take {}, dst: {}",
                         file.getAbsolutePath(),
                         s.getReadIndex(),
-                        content.size(),
+                        contents.size(),
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
-                        .addData("data", content)
+                        .addData("data", contents)
+                        .addData("path", s.getFile().getPath())
                         .setMode(Mode.MODIFY)
-                        .setControlSignal(new ControlSignal(Request.SUBSCRIBE))
+                        .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
                 ctx.writeAndFlush(logP).addListener(future -> {
                     if (future.isSuccess()) {
-                        s.setReadIndex(s.getReadIndex() + content.size());
+                        s.setReadIndex(s.getReadIndex() + contents.size());
                         logger.debug("send success, the subscribe read index add to {}", s.getReadIndex());
                     } else {
                         throw new RuntimeException("writeAndFlush error");
@@ -75,7 +72,7 @@ public class SubscribeHandler extends BasicRequestHandler {
             } catch (Exception e) {
                 logger.error(
                         "log {} modified and send frame to {} error: ",
-                        s.getLog().getAbsolutePath(),
+                        s.getFile().getAbsolutePath(),
                         ctx.channel().remoteAddress(),
                         e);
             }
@@ -86,47 +83,38 @@ public class SubscribeHandler extends BasicRequestHandler {
                     file.getAbsolutePath(),
                     s.getReadIndex(),
                     ctx.channel().remoteAddress());
-            try {
-                LogP logP = LogPFactory.defaultInstance0()
-                        .setMode(Mode.DELETE)
-                        .setControlSignal(new ControlSignal(Request.SUBSCRIBE))
-                        .create();
-                ctx.writeAndFlush(logP).addListener(future -> {
-                    if (future.isSuccess()) {
-                        logger.debug("send success");
-                    } else {
-                        throw new RuntimeException("writeAndFlush error ");
-                    }
-                });
-            } catch (JsonProcessingException e) {
-                logger.error(
-                        "log {} delete and send frame to {} error: ",
-                        s.getLog().getAbsolutePath(),
-                        ctx.channel().remoteAddress(),
-                        e);
-            }
+            LogP logP = LogPFactory.defaultInstance0()
+                    .setMode(Mode.DELETE)
+                    .setRespond(Respond.NEW_LOG_CONTENT)
+                    .addData("path", s.getFile().getPath())
+                    .create();
+            ctx.writeAndFlush(logP).addListener(future -> {
+                if (future.isSuccess()) {
+                    logger.debug("send success");
+                } else {
+                    throw new RuntimeException("writeAndFlush error ");
+                }
+            });
         });
         subscriber.setCreateHandler(s -> {
             try {
-                long lastLineIndex = Files.lines(s.getLog().toPath(), LogProtocolCodec.CHARSET).count();
+                long lastLineIndex = Files.lines(s.getFile().toPath(), LogProtocolCodec.CHARSET).count();
                 long skip = lastLineIndex <= windowSize ? 0 : lastLineIndex - windowSize;
-                List<String> content = Files.lines(s.getLog().toPath(), LogProtocolCodec.CHARSET)
-                        .skip(skip)
-                        .limit(windowSize)
-                        .collect(Collectors.toList());
+                List<LogLineText> contents = FileUtils.getLogText(s.getFile(), skip, windowSize);
                 logger.debug("{} create, will send content lines skip {} and take {}, dst: {}",
                         file.getAbsolutePath(),
                         skip,
-                        content.size(),
+                        contents.size(),
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
-                        .addData("data", content)
+                        .addData("data", contents)
+                        .addData("path", s.getFile().getPath())
                         .setMode(Mode.CREATE)
-                        .setControlSignal(new ControlSignal(Request.SUBSCRIBE))
+                        .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
                 ctx.writeAndFlush(logP).addListener(future -> {
                     if (future.isSuccess()) {
-                        s.setReadIndex(s.getReadIndex() + content.size());
+                        s.setReadIndex(lastLineIndex);
                         logger.debug("send success, the subscribe read index add to {}", s.getReadIndex());
                     } else {
                         throw new RuntimeException("writeAndFlush error ");
@@ -135,7 +123,7 @@ public class SubscribeHandler extends BasicRequestHandler {
             } catch (Exception e) {
                 logger.error(
                         "log {} create and send frame to {} error: ",
-                        s.getLog().getAbsolutePath(),
+                        s.getFile().getAbsolutePath(),
                         ctx.channel().remoteAddress(),
                         e);
             }
@@ -145,25 +133,24 @@ public class SubscribeHandler extends BasicRequestHandler {
             try {
                 long lastLineIndex = Files.lines(file.toPath(), LogProtocolCodec.CHARSET).count();
                 long skip = lastLineIndex <= windowSize ? 0 : lastLineIndex - windowSize;
-                List<String> content = Files.lines(file.toPath(), LogProtocolCodec.CHARSET)
-                        .skip(skip)
-                        .limit(windowSize)
-                        .collect(Collectors.toList());
+                List<LogLineText> contents = FileUtils.getLogText(file, skip, windowSize);
                 logger.debug("{} init, will send content lines skip {} and take {}, dst: {}",
                         file.getAbsolutePath(),
                         skip,
-                        content.size(),
+                        contents.size(),
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
-                        .addData("data", content)
-                        .setControlSignal(new ControlSignal(Request.SUBSCRIBE))
+                        .addData("data", contents)
+                        .addData("path", file.getPath())
+                        .setMode(Mode.CREATE)
+                        .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
                 ctx.writeAndFlush(logP).addListener(future -> {
                     if (future.isSuccess()) {
-                        subscriber.setReadIndex(skip + content.size());
+                        subscriber.setReadIndex(skip + contents.size());
                         logger.debug("send success, the subscribe read index add to {}", subscriber.getReadIndex());
                     } else {
-                        throw new RuntimeException("writeAndFlush error ");
+                        throw new RuntimeException("writeAndFlush error " + future.cause());
                     }
                 });
             } catch (Exception e) {

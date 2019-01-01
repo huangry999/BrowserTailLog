@@ -19,8 +19,12 @@ import java.util.stream.Collectors;
 @Service
 public class LogFileServiceImpl implements LogFileService {
     private static final Logger logger = LoggerFactory.getLogger(LogFileServiceImpl.class);
+    private final LogFileProperties logFileProperties;
+
     @Autowired
-    private LogFileProperties logFileProperties;
+    public LogFileServiceImpl(LogFileProperties logFileProperties) {
+        this.logFileProperties = logFileProperties;
+    }
 
     @Override
     public boolean bind(@NotNull File log) {
@@ -38,6 +42,14 @@ public class LogFileServiceImpl implements LogFileService {
                 .map(LogFileAttribute::valueOf)
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<LogFileAttribute> listRoot() {
+        return logFileProperties.getPath()
+                .stream()
+                .map(this::convert)
+                .collect(Collectors.toList());
     }
 
     @Override

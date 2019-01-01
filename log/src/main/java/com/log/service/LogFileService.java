@@ -24,6 +24,13 @@ public interface LogFileService {
     List<LogFileAttribute> listLogFiles(String directory, boolean isRecursive);
 
     /**
+     * List root files, defined in configuration
+     *
+     * @return root files
+     */
+    List<LogFileAttribute> listRoot();
+
+    /**
      * Convert by file path
      *
      * @param file the file path

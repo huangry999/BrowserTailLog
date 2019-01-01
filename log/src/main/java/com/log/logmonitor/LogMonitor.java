@@ -54,17 +54,37 @@ public class LogMonitor {
         parameter.setMonitorListener(new MonitorListener() {
             @Override
             public void onDirectoryCreate(File directory) {
-
+                for (Subscriber s : subscriberManager.getSubscribers(directory)) {
+                    if (s.getCreateHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getCreateHandler().handle(s));
+                }
+                final File parent = directory.getParentFile();
+                if (parent != null){
+                    this.onDirectoryChange(parent);
+                }
             }
 
             @Override
             public void onDirectoryChange(File directory) {
-
+                for (Subscriber s : subscriberManager.getSubscribers(directory)) {
+                    if (s.getModifyHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getModifyHandler().handle(s));
+                }
             }
 
             @Override
             public void onDirectoryDelete(File directory) {
-
+                for (Subscriber s : subscriberManager.getSubscribers(directory)) {
+                    if (s.getDeleteHandler() == null)
+                        continue;
+                    executorService.submit(() -> s.getDeleteHandler().handle(s));
+                }
+                final File parent = directory.getParentFile();
+                if (parent != null){
+                    this.onDirectoryChange(parent);
+                }
             }
 
             @Override
@@ -82,6 +102,10 @@ public class LogMonitor {
                     if (s.getModifyHandler() == null)
                         continue;
                     executorService.submit(() -> s.getModifyHandler().handle(s));
+                }
+                final File parent = file.getParentFile();
+                if (parent != null){
+                    this.onDirectoryChange(parent);
                 }
             }
 

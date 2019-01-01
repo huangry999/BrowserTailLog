@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import java.io.File;
 
 public class Subscriber {
-    private final File log;
+    private final File file;
     private long readIndex;
     private final ChannelHandlerContext context;
 
@@ -13,8 +13,8 @@ public class Subscriber {
     private SubscribeEventHandler deleteHandler;
     private SubscribeEventHandler createHandler;
 
-    public Subscriber(File log, ChannelHandlerContext context) {
-        this.log = log;
+    public Subscriber(File file, ChannelHandlerContext context) {
+        this.file = file;
         this.context = context;
     }
 
@@ -54,8 +54,8 @@ public class Subscriber {
         this.createHandler = createHandler;
     }
 
-    public File getLog() {
-        return log;
+    public File getFile() {
+        return file;
     }
 
 }

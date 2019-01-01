@@ -1,9 +1,18 @@
 package com.log.util;
 
+import com.log.config.LogFileProperties;
+import com.log.service.bean.LogLineText;
+import com.log.socket.codec.LogProtocolCodec;
+
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FileUtils {
     /**
@@ -26,22 +35,62 @@ public class FileUtils {
     /**
      * list files of director
      *
-     * @param directory target directory
-     * @param recursive is recursive
+     * @param directory  target directory
+     * @param recursive  is recursive
      * @param fileFilter filter, nullable
      * @return the files of this directory
      */
-    public static List<File> listFiles(File directory, boolean recursive, FileFilter fileFilter){
+    public static List<File> listFiles(File directory, boolean recursive, FileFilter fileFilter) {
         List<File> result = new ArrayList<>();
-        if (directory == null || !directory.exists() || !directory.isDirectory()){
+        if (directory == null || !directory.exists() || !directory.isDirectory()) {
             return result;
         }
-        for(File f: directory.listFiles()){
-            if (f.isDirectory() && recursive){
-                result.addAll(listFiles(f, true, fileFilter));
-            }else if (fileFilter == null || fileFilter.accept(f)){
+        for (File f : directory.listFiles()) {
+            if (f.isDirectory()) {
+                result.add(f);
+                if (recursive) {
+                    result.addAll(listFiles(f, true, fileFilter));
+                }
+            } else if (fileFilter == null || fileFilter.accept(f)) {
                 result.add(f);
             }
+        }
+        return result;
+    }
+
+    /**
+     * check the input path is valid(in the log directories of configuration)
+     *
+     * @param path file path
+     * @return true/false
+     */
+    public static boolean checkValid(String path) {
+        LogFileProperties properties = SpringUtils.get(LogFileProperties.class);
+        return properties.getPath()
+                .stream()
+                .anyMatch(root -> Paths.get(path).toAbsolutePath().startsWith(Paths.get(root)));
+    }
+
+    /**
+     * Splits log file by line, skip and take the special context.
+     *
+     * @param log  log file
+     * @param skip skip count
+     * @param take take count
+     * @return log context order by line no desc
+     * @throws IOException io exception
+     */
+    public static List<LogLineText> getLogText(File log, long skip, Long take) throws IOException {
+        if (!log.exists() || !log.isFile()) {
+            return new ArrayList<>();
+        }
+        List<String> content = Files.lines(log.toPath(), LogProtocolCodec.CHARSET)
+                .skip(skip)
+                .limit(take)
+                .collect(Collectors.toList());
+        List<LogLineText> result = new ArrayList<>(content.size());
+        for (int i = content.size() - 1; i >= 0; i--) {
+            result.add(new LogLineText(skip + i + 1, content.get(i)));
         }
         return result;
     }

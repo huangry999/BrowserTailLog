@@ -13,10 +13,13 @@ log:
   suffix:
     - ".log"
   recursive: true
-  windowSize: 1000
+  windowSize: 50
+
+init:
+  fetchTailByPercent: 75
 
 monitor:
-  intervalMs: 10000
+  intervalMs: 2000
 ---
 spring:
   profiles: dev

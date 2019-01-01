@@ -1,20 +1,28 @@
 package com.log.socket.constants;
 
-public enum Sender {
-    SERVER(false),
-    CLIENT(true),;
+import com.log.constant.CodedConstant;
 
-    private boolean flag;
+public enum Sender implements CodedConstant {
+    SERVER(1),
+    CLIENT(2),;
 
-    Sender(boolean flag) {
-        this.flag = flag;
+    private int code;
+
+    /**
+     * size of sender, byte
+     */
+    public static final int SIZE = 1;
+
+    Sender(int code) {
+        this.code = code;
     }
 
-    public boolean getFlag() {
-        return flag;
+    public static Sender valueOf(Integer code) {
+        return CodedConstant.valueOf(code, Sender.values(), Sender.SERVER);
     }
 
-    public static Sender valueOf(boolean flag) {
-        return flag ? CLIENT : SERVER;
+    @Override
+    public int getCode() {
+        return this.code;
     }
 }

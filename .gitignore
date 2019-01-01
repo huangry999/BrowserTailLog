@@ -34,3 +34,4 @@ hs_err_pid*
 /ui/package-lock.json
 /ui/node_modules
 /ui/.vscode
+/ui/build

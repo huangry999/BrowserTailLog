@@ -1,14 +1,18 @@
 package com.log.service.handler.requestbetween;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.log.service.bean.LogLineText;
 import com.log.service.handler.BasicRequestHandler;
 import com.log.service.handler.CommonRequest;
+import com.log.socket.constants.Respond;
 import com.log.socket.logp.LogP;
 import com.log.socket.logp.LogPFactory;
+import com.log.util.FileUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -20,6 +24,8 @@ import java.util.stream.Stream;
 @Component
 public class RequestBetweenHandler extends BasicRequestHandler {
     private final static Logger logger = LoggerFactory.getLogger(RequestBetweenHandler.class);
+    @Value("${log.windowSize}")
+    private int windowSize;
 
     @Override
     protected void handle(ChannelHandlerContext ctx, LogP msg, CommonRequest request) throws Exception {
@@ -28,17 +34,24 @@ public class RequestBetweenHandler extends BasicRequestHandler {
         if (!log.exists()) {
             return;
         }
-        logger.debug("{} request log {} from {} to {}",
+        long t0 = betweenRequest.getTake() == null ? windowSize : betweenRequest.getTake();
+        if (t0 < 0) {
+            throw new IllegalArgumentException("Take value must be positive, actual: " + t0);
+        }
+        long from0 = betweenRequest.getFrom() - (t0 - 1);
+        long skip = from0 > 0 ? from0 : 0;
+        long take0 = betweenRequest.getFrom() - skip;
+        logger.debug("{} request log {} skip {} take {}",
                 ctx.channel().remoteAddress(),
                 log.getAbsolutePath(),
-                betweenRequest.getFrom(),
-                betweenRequest.getTo());
-        Stream<String> stream = Files.lines(log.toPath()).skip(betweenRequest.getFrom() - 1);
-        if (betweenRequest.getTo() != null) {
-            stream = stream.limit(betweenRequest.getTo());
-        }
-        List<String> context = stream.collect(Collectors.toList());
-        LogP respond = LogPFactory.defaultInstance0().addData("data", context).create();
+                skip,
+                take0);
+        List<LogLineText> contents = FileUtils.getLogText(log, skip, take0);
+        LogP respond = LogPFactory.defaultInstance0()
+                .addData("data", contents)
+                .addData("path", request.getPath())
+                .setRespond(Respond.LOG_CONTENT_BETWEEN)
+                .create();
         ctx.writeAndFlush(respond).addListener(future -> {
             if (future.isSuccess()) {
                 logger.debug("send successfully");
@@ -58,9 +71,14 @@ public class RequestBetweenHandler extends BasicRequestHandler {
     }
 }
 
+/**
+ * Get log context by line number request.
+ * Due to log showed by line number desc, the "from" parameter means the last line number of contents to take,
+ * and the "take" parameter means the log row (include "from") count to take upside "from".
+ */
 class BetweenRequest extends CommonRequest {
     private int from;
-    private Integer to;
+    private Integer take;
 
     public int getFrom() {
         return from;
@@ -73,11 +91,11 @@ class BetweenRequest extends CommonRequest {
             this.from = from;
     }
 
-    public Integer getTo() {
-        return to;
+    public Integer getTake() {
+        return take;
     }
 
-    public void setTo(Integer to) {
-        this.to = to;
+    public void setTake(Integer take) {
+        this.take = take;
     }
 }

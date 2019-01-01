@@ -6,7 +6,8 @@ import com.log.socket.constants.Sender;
 import com.log.socket.logp.head.*;
 import com.log.util.PrintUtils;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class LogProtocolCodecTest {
 
@@ -20,15 +21,9 @@ public class LogProtocolCodecTest {
         version.setMainVersion((short)1);
         head.setVersion(version);
 
-        Level level = new Level();
-        level.setCurrent((short)1);
-        level.setTotal((short)1);
-        head.setLevel(level);
+        head.setSender(Sender.CLIENT);
 
-        ControlSignal signal = new ControlSignal();
-        signal.setSender(Sender.SERVER);
-        signal.setRequest(Request.INIT);
-        head.setControlSignal(signal);
+        head.setRequest(Request.INIT);
 
         head.setMode(Mode.MODIFY);
 
@@ -38,10 +33,15 @@ public class LogProtocolCodecTest {
 
         LogProtocolCodec codec = new LogProtocolCodec();
         byte[] bytes = codec.encodeHead(head);
-        System.out.println(PrintUtils.toString(bytes));
+        System.out.println("expect head -- ");
+        System.out.println(head);
 
+        System.out.println("actual head -- ");
         FrameHead headDec = codec.decodeHead(bytes);
         System.out.println(headDec);
+
+        System.out.println("bytes -- ");
+        System.out.println(PrintUtils.toString(bytes));
 
         assertEquals(head.hashCode(), headDec.hashCode());
     }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -28,14 +29,29 @@ public class SubscriberManager {
     /**
      * Remove special log from socket of context
      *
-     * @param ctx context
-     * @param log log file
+     * @param ctx  context
+     * @param file the file
      */
-    public void remove(ChannelHandlerContext ctx, File log) {
+    public void remove(ChannelHandlerContext ctx, File file) {
         subscribers
                 .stream()
                 .filter(s -> s.getContext().equals(ctx))
-                .filter(s -> s.getLog().equals(log))
+                .filter(s -> s.getFile().equals(file))
+                .findAny()
+                .ifPresent(s -> subscribers.remove(s));
+    }
+
+    /**
+     * Remove files from socket of context by filter
+     *
+     * @param ctx    context
+     * @param filter file filter
+     */
+    public void remove(ChannelHandlerContext ctx, FileFilter filter) {
+        subscribers
+                .stream()
+                .filter(s -> s.getContext().equals(ctx))
+                .filter(s -> filter.accept(s.getFile()))
                 .findAny()
                 .ifPresent(s -> subscribers.remove(s));
     }
@@ -52,12 +68,12 @@ public class SubscriberManager {
     /**
      * get subscriber by event and log
      *
-     * @param log the log file
+     * @param file the file
      * @return subscribers
      */
-    public List<Subscriber> getSubscribers(File log) {
+    public List<Subscriber> getSubscribers(File file) {
         List<Subscriber> r = subscribers.stream()
-                .filter(s -> s.getLog().equals(log))
+                .filter(s -> s.getFile().equals(file))
                 .filter(s -> s.getContext().channel().isActive())
                 .collect(Collectors.toList());
         return r;

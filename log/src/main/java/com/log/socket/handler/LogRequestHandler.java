@@ -9,7 +9,7 @@ public class LogRequestHandler extends SimpleChannelInboundHandler<LogP> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, LogP msg) throws Exception {
-        RequestHandler handler = msg.getHead().getControlSignal().getRequest().handler();
+        RequestHandler handler = msg.getHead().getRequest().handler();
         handler.channelRead(ctx, msg);
     }
 }
