@@ -17,6 +17,10 @@ public class SpringUtils implements ApplicationContextAware {
         return context.getBean(clazz);
     }
 
+    public static <T> T getProperty(String key, Class<T> clazz) {
+        return context.getEnvironment().getProperty(key, clazz);
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;

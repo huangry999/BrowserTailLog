@@ -7,6 +7,7 @@ import FileSize from './FileSize';
 const columns = [{
   render: record => <Icon type={valueOf(record.type).iconType} />,
   width: 50,
+  key: 'icon',
 }, {
   title: 'FileName',
   dataIndex: 'name',
@@ -21,6 +22,10 @@ const columns = [{
   key: 'modifyTime',
 }];
 export default class FileTable extends React.Component {
+
+  componentDidMount(){
+    this.props.init();
+  }
 
   onClick = (record) => {
     if (this.props.onClick) {

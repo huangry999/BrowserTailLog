@@ -16,6 +16,9 @@ const Request = {
   CHANGE_DIR: {
     code: 5,
   },
+  LOGIN: {
+    code: 6,
+  },
 }
 
 export default Request;

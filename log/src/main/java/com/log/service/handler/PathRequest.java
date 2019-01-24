@@ -1,6 +1,6 @@
 package com.log.service.handler;
 
-public class CommonRequest {
+public class PathRequest implements RequestParam{
     protected String path;
 
     public String getPath() {

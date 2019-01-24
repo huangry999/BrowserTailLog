@@ -1,20 +1,28 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { Provider } from 'react-redux'
-import { HashRouter as Router, Route, Switch } from 'react-router-dom'
+import { Route, Switch, Router } from 'react-router-dom'
 import Dashboarder from './Dashboarder'
 import LogView from './containers/LogView'
+import LoginPage from './containers/LoginPage'
+import { createHashHistory } from 'history'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistor } from './config/configureStore'
 
-export default class Root extends Component {
-  render() {
-    return (
-      <Provider store={this.props.store}>
-        <Router>
+export const history = createHashHistory();
+
+const Root = ({ store }) => {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <Router history={history}>
           <Switch>
-            <Route path="/log" component={LogView} />
+            <Route path="/log/:key" component={LogView} />
+            <Route path="/login" component={LoginPage} />
             <Route path="/" component={Dashboarder} />
           </Switch>
         </Router>
-      </Provider>
-    );
-  }
+      </PersistGate>
+    </Provider >
+  );
 }
+export default Root;

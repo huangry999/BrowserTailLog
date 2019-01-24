@@ -17,7 +17,8 @@
 package com.log.socket;
 
 import com.log.socket.codec.LogProtocolCodec;
-import com.log.socket.handler.LogRequestHandler;
+import com.log.socket.handler.BusinessHandler;
+import com.log.socket.handler.ExceptionHandler;
 import com.log.util.SpringUtils;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -32,22 +33,22 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 public class LogWebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
-    public static final String WEBSOCKET_PATH = "/log";
+    private static final String WEBSOCKET_PATH = "/log";
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        if (Boolean.valueOf(SpringUtils.context().getEnvironment().getProperty("${netty.ssl}"))) {
+        if (SpringUtils.getProperty("netty.ssl", Boolean.class)) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
             SslContext cxt = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
             pipeline.addLast(cxt.newHandler(ch.alloc()));
         }
         pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(Integer.valueOf(
-                SpringUtils.context().getEnvironment().getProperty("${netty.httpBlockMaxByte}", "1024"))));
+        pipeline.addLast(new HttpObjectAggregator(SpringUtils.getProperty("netty.httpBlockMaxByte", Integer.class)));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
         pipeline.addLast(new LogProtocolCodec());
-        pipeline.addLast(new LogRequestHandler());
+        pipeline.addLast(new BusinessHandler());
+        pipeline.addLast(new ExceptionHandler());
     }
 }

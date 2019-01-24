@@ -40,17 +40,7 @@ public class LogMonitor {
         //init monitor
         MonitorParameter parameter = new MonitorParameter();
         parameter.setRoots(logFileProperties.getPath());
-        IOFileFilter filter = new OrFileFilter(
-                logFileProperties.getSuffix()
-                        .stream()
-                        .map(SuffixFileFilter::new)
-                        .collect(Collectors.toList()));
-        if (logFileProperties.isRecursive()) {
-            filter = new OrFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-        } else {
-            filter = new AndFileFilter(FileFileFilter.FILE, filter);
-        }
-        parameter.setFileFilter(filter);
+        parameter.setFileFilter(logFileProperties.getFilter());
         parameter.setMonitorListener(new MonitorListener() {
             @Override
             public void onDirectoryCreate(File directory) {

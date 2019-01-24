@@ -7,7 +7,8 @@ public enum Respond implements CodedConstant {
     INIT(0x1),
     LIST_FILE(0x2),
     NEW_LOG_CONTENT(0x3),
-    LOG_CONTENT_BETWEEN(0x4),;
+    LOG_CONTENT_BETWEEN(0x4),
+    LOGIN(0x5),;
     private int code;
 
     /**

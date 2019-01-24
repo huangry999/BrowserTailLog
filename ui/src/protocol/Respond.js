@@ -12,6 +12,9 @@ const Respond = {
   },
   LOG_CONTENT_BETWEEN:{
     code: 4,
+  },
+  LOGIN:{
+    code: 5,
   }
 }
 

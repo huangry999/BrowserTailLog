@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Configuration status="trace" strict="true" name="LogConfig">
+<Configuration respondStatus="trace" strict="true" name="LogConfig">
     <Properties>
         <Property name="filepath">/tmp/log</Property>
     </Properties>
@@ -21,7 +21,7 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="fileLogger" level="info" additivity="false">
+        <Logger name="fileLogger" level="info">
             <AppenderRef ref="logService"/>
             <AppenderRef ref="STDOUT"/>
         </Logger>

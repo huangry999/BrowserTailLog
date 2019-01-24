@@ -34,6 +34,16 @@ export function decode(blob) {
  */
 export function encode(request = Request.INIT, body = {}) {
   const data = JSON.stringify(body);
+  return encode0(request, data);
+}
+
+/**
+ * encode to log protocol
+ * 
+ * @param {Request} request the request
+ * @param {Object} data string body to send 
+ */
+export function encode0(request = Request.INIT, data = "") {
   const dataBuffer = Buffer.from(data, 'utf8');
   const size = frameHeadSize + dataBuffer.length;
   const frame = Buffer.allocUnsafe(size);

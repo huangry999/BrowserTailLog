@@ -22,7 +22,10 @@ public class SubscriberManager {
      * @param ctx context
      */
     public void remove(ChannelHandlerContext ctx) {
-        List<Subscriber> rm = subscribers.stream().filter(s -> s.getContext().equals(ctx)).collect(Collectors.toList());
+        List<Subscriber> rm = subscribers.stream()
+                .filter(s -> s instanceof LinkedSubscribe)
+                .map(s -> (LinkedSubscribe) s)
+                .filter(s -> s.getContext().equals(ctx)).collect(Collectors.toList());
         subscribers.removeAll(rm);
     }
 
@@ -35,6 +38,8 @@ public class SubscriberManager {
     public void remove(ChannelHandlerContext ctx, File file) {
         subscribers
                 .stream()
+                .filter(s -> s instanceof LinkedSubscribe)
+                .map(s -> (LinkedSubscribe) s)
                 .filter(s -> s.getContext().equals(ctx))
                 .filter(s -> s.getFile().equals(file))
                 .findAny()
@@ -50,10 +55,21 @@ public class SubscriberManager {
     public void remove(ChannelHandlerContext ctx, FileFilter filter) {
         subscribers
                 .stream()
+                .filter(s -> s instanceof LinkedSubscribe)
+                .map(s -> (LinkedSubscribe) s)
                 .filter(s -> s.getContext().equals(ctx))
                 .filter(s -> filter.accept(s.getFile()))
                 .findAny()
                 .ifPresent(s -> subscribers.remove(s));
+    }
+
+    /**
+     * remove special subscriber
+     *
+     * @param subscriber subscriber
+     */
+    public void remove(Subscriber subscriber) {
+        subscribers.remove(subscriber);
     }
 
     /**
@@ -74,7 +90,6 @@ public class SubscriberManager {
     public List<Subscriber> getSubscribers(File file) {
         List<Subscriber> r = subscribers.stream()
                 .filter(s -> s.getFile().equals(file))
-                .filter(s -> s.getContext().channel().isActive())
                 .collect(Collectors.toList());
         return r;
     }

@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FileUtils {
     /**
@@ -77,10 +76,10 @@ public class FileUtils {
      * @param log  log file
      * @param skip skip count
      * @param take take count
-     * @return log context order by line no desc
+     * @return log context order by line no asc
      * @throws IOException io exception
      */
-    public static List<LogLineText> getLogText(File log, long skip, Long take) throws IOException {
+    public static List<LogLineText> getLogText(File log, long skip, Integer take) throws IOException {
         if (!log.exists() || !log.isFile()) {
             return new ArrayList<>();
         }
@@ -89,7 +88,7 @@ public class FileUtils {
                 .limit(take)
                 .collect(Collectors.toList());
         List<LogLineText> result = new ArrayList<>(content.size());
-        for (int i = content.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < content.size(); i++) {
             result.add(new LogLineText(skip + i + 1, content.get(i)));
         }
         return result;

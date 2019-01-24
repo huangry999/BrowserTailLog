@@ -2,16 +2,13 @@ package com.log.socket.logp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.log.socket.codec.LogProtocolCodec;
-import com.log.socket.constants.Mode;
-import com.log.socket.constants.Request;
-import com.log.socket.constants.Respond;
-import com.log.socket.constants.Sender;
-import com.log.socket.logp.head.*;
-import io.netty.handler.codec.CodecException;
+import com.log.socket.constants.*;
+import com.log.socket.logp.head.Checksum;
+import com.log.socket.logp.head.FrameHead;
+import com.log.socket.logp.head.StartFlag;
+import com.log.socket.logp.head.Version;
 import org.apache.logging.log4j.util.Strings;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,8 +21,6 @@ public class LogPFactory {
      * <ul>
      * <li>main version 1</li>
      * <li>sub version 1</li>
-     * <li>total level 1</li>
-     * <li>sub level 1</li>
      * <li>control signal Server None</li>
      * <li>mode None</li>
      * </ul>
@@ -99,28 +94,34 @@ public class LogPFactory {
     }
 
     /**
-     * Generate the log protocol frame
+     * Generate the log protocol frame with success status.
      *
      * @return frame
      */
     public LogP create() {
+        return this.create0(RespondStatus.SUCCESS, null);
+    }
+
+    /**
+     * Generate the log protocol
+     *
+     * @param respondStatus respond respondStatus
+     * @param msg    error info
+     * @return frame
+     */
+    public LogP create0(RespondStatus respondStatus, String msg) {
         ObjectMapper objectMapper = new ObjectMapper();
         String bodyStr;
         try {
+            this.dataMap.put("respondStatus", respondStatus.getCode());
+            if (Strings.isNotBlank(msg)) {
+                this.dataMap.put("msg", msg);
+            }
             bodyStr = objectMapper.writeValueAsString(this.dataMap);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         this.logP.setBody(bodyStr);
-
-        /*FrameHead head = this.logP.getHead();
-        ByteBuffer byteBuffer = LogProtocolCodec.CHARSET.encode(bodyStr);
-        int bodySize = byteBuffer.limit();
-        int size = FrameHead.SIZE + bodySize;
-        if (size > (Math.pow(2, Size.SIZE * 8))) {
-            throw new CodecException(String.format("total size %s is grate than maximum %s", size, Math.pow(2, Size.SIZE * 8)));
-        }
-        head.setSize(new Size((short) size));*/
         return this.logP;
     }
 

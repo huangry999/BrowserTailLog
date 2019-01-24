@@ -1,33 +1,19 @@
 package com.log.subscribe;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import java.io.File;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Subscriber {
     private final File file;
-    private long readIndex;
-    private final ChannelHandlerContext context;
+
 
     private SubscribeEventHandler modifyHandler;
     private SubscribeEventHandler deleteHandler;
     private SubscribeEventHandler createHandler;
 
-    public Subscriber(File file, ChannelHandlerContext context) {
+    public Subscriber(File file) {
         this.file = file;
-        this.context = context;
-    }
-
-    public ChannelHandlerContext getContext() {
-        return context;
-    }
-
-    public long getReadIndex() {
-        return readIndex;
-    }
-
-    public void setReadIndex(long readIndex) {
-        this.readIndex = readIndex;
     }
 
     public SubscribeEventHandler getModifyHandler() {

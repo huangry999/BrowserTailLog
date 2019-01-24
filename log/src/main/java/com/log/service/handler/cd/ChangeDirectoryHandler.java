@@ -1,13 +1,13 @@
 package com.log.service.handler.cd;
 
-import com.log.config.LogFileProperties;
 import com.log.service.LogFileService;
 import com.log.service.bean.LogFileAttribute;
-import com.log.service.handler.BasicRequestHandler;
-import com.log.service.handler.CommonRequest;
+import com.log.service.handler.BasicAuthRequestHandler;
+import com.log.service.handler.PathRequest;
 import com.log.socket.constants.Respond;
 import com.log.socket.logp.LogP;
 import com.log.socket.logp.LogPFactory;
+import com.log.subscribe.LinkedSubscribe;
 import com.log.subscribe.Subscriber;
 import com.log.subscribe.SubscriberManager;
 import com.log.util.FileUtils;
@@ -30,19 +30,20 @@ import java.util.List;
  * Will respond files under the directory.
  */
 @Component
-public class ChangeDirectoryHandler extends BasicRequestHandler {
+public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest> {
     private final LogFileService logFileService;
     private final static Logger logger = LoggerFactory.getLogger(ChangeDirectoryHandler.class);
     private final SubscriberManager subscriberManager;
 
     @Autowired
     public ChangeDirectoryHandler(LogFileService logFileService, SubscriberManager subscriberManager) {
+        super(PathRequest.class);
         this.logFileService = logFileService;
         this.subscriberManager = subscriberManager;
     }
 
     @Override
-    protected void handle(ChannelHandlerContext ctx, LogP msg, CommonRequest request) throws Exception {
+    protected void handle(ChannelHandlerContext ctx, LogP msg, PathRequest request) throws Exception {
         logger.debug("{} change directory to {}", ctx.channel().remoteAddress(), request.getPath());
         //if path is null. return the root
         List<LogFileAttribute> result;
@@ -54,7 +55,7 @@ public class ChangeDirectoryHandler extends BasicRequestHandler {
             }
             result = this.logFileService.listLogFiles(request.getPath(), false);
             subscriberManager.remove(ctx, DirectoryFileFilter.INSTANCE);
-            Subscriber subscriber = new Subscriber(new File(request.getPath()), ctx);
+            Subscriber subscriber = new LinkedSubscribe(new File(request.getPath()), ctx);
             subscriber.setDeleteHandler(s -> send(logFileService.listRoot(), ctx, null));
             subscriber.setModifyHandler(s -> {
                 List<LogFileAttribute> data = this.logFileService.listLogFiles(request.getPath(), false);

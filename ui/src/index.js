@@ -2,28 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Root from './Root';
-import * as serviceWorker from './serviceWorker';
-import setupSocket from './socket/socket'
-
-import { createStore, applyMiddleware } from 'redux'
-import { createLogger } from 'redux-logger'
-import rootReducer from './reducer/reducers'
-import createSagaMiddleware from 'redux-saga'
-import handleNewMessage from './saga/sagas'
-
-
-const loggerMiddleware = createLogger()
-const sagaMiddleware = createSagaMiddleware()
-
-const store = createStore(rootReducer, applyMiddleware(
-  sagaMiddleware,
-  loggerMiddleware))
-
-const socket = setupSocket(store.dispatch)
-sagaMiddleware.run(handleNewMessage, { socket, dispatch: store.dispatch })
+import * as serviceWorker from './serviceWorker'
+import { init } from './action'
+import { socket, store } from './config/configureStore'
 
 socket.onopen = () => {
+  store.dispatch(init());
+}
+let hasRender = false
+export function renderRoot() {
+  if (hasRender) {
+    return;
+  }
   ReactDOM.render(<Root store={store} />, document.getElementById('root'));
+  hasRender = true;
 }
 
 // If you want your app to work offline and load faster, you can change

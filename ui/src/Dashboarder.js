@@ -2,7 +2,6 @@ import { Menu, Icon, Row } from 'antd';
 import React from 'react';
 import FileTableConnect from './containers/FileTableConnect';
 
-
 const SubMenu = Menu.SubMenu;
 const MenuItemGroup = Menu.ItemGroup;
 
@@ -10,7 +9,7 @@ export default class Dashboarder extends React.Component {
   state = {
     current: 'mail',
   }
-
+  
   handleClick = (e) => {
     console.log('click ', e);
     this.setState({

@@ -23,4 +23,12 @@ public class LogLineText implements Comparator<LogLineText>{
     public int compare(LogLineText o1, LogLineText o2) {
         return (int) (o1.lineNo - o2.lineNo);
     }
+
+    @Override
+    public String toString() {
+        return "LogLineText{" +
+                "lineNo=" + lineNo +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }

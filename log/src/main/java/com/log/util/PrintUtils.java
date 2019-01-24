@@ -5,7 +5,7 @@ public class PrintUtils {
     /**
      * Print a byte into binary.
      *
-     * @param b           byte
+     * @param b byte
      * @return binary string
      */
     public static String toString(byte b) {
@@ -19,7 +19,7 @@ public class PrintUtils {
     /**
      * Print byte array into binary, split by comma
      *
-     * @param bs          byte array
+     * @param bs byte array
      * @return binary string
      */
     public static String toString(byte[] bs) {
@@ -41,7 +41,8 @@ public class PrintUtils {
         String[] a = new String[bs.length];
         for (int i = 0; i < bs.length; i++) {
             int b = bs[i] & 0xff;
-            a[i] = Integer.toHexString(b);
+            final String hs = Integer.toHexString(b);
+            a[i] = hs.length() == 1 ? 0 + hs : hs;
         }
         return String.join(delimiter, a);
     }

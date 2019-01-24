@@ -1,7 +1,6 @@
 package com.log.socket.logp;
 
 import com.log.socket.logp.head.FrameHead;
-import io.netty.buffer.ByteBuf;
 
 public class LogP {
     private FrameHead head;
@@ -43,9 +42,17 @@ public class LogP {
 
     @Override
     public String toString() {
-        return "LogP{" +
-                "head=" + head +
-                ", body=" + body +
-                '}';
+        if (body.length() > 100) {
+            return "LogP{" +
+                    "head=" + head +
+                    ", body=" + body.substring(0, 100) +
+                    "...}";
+        } else {
+            return "LogP{" +
+                    "head=" + head +
+                    ", body=" + body +
+                    '}';
+        }
+
     }
 }

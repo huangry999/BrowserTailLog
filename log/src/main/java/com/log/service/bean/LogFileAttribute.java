@@ -13,6 +13,7 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
     private String name;
     private int type;
     private Long size;
+    private String key;
 
     /**
      * Parse by a file
@@ -28,6 +29,7 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
         result.type = (file.isDirectory() ? FileType.DIRECTORY : FileType.LOG_FILE).getCode();
         result.path = file.toPath().toString();
         result.name = file.getName();
+        result.key = file.hashCode() + "";
         Date md = new Date(file.lastModified());
         result.modifyUtcTime = DateFormatUtils.format(md, "yyyy-MM-dd'T'HH:mm'Z'");
         if (!file.isDirectory()) {
@@ -69,6 +71,10 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
 
     public Long getSize() {
         return size;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     @Override

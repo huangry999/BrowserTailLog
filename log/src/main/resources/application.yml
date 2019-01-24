@@ -7,19 +7,27 @@ netty:
   port: 8081
   address: 192.168.1.101
 
+security:
+  auth: 'sa'
+  expireMinutes: 30
+
 log:
   path:
     - "G:\\log"
   suffix:
     - ".log"
   recursive: true
-  windowSize: 50
+  windowSize: 100
+  shrinkThreshold: 100
 
 init:
   fetchTailByPercent: 75
 
 monitor:
   intervalMs: 2000
+
+reader:
+  samplingInterval: 1000
 ---
 spring:
   profiles: dev

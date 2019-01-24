@@ -1,15 +1,14 @@
 package com.log.socket.codec;
 
-import com.log.socket.constants.Mode;
-import com.log.socket.constants.Request;
-import com.log.socket.constants.Respond;
-import com.log.socket.constants.Sender;
+import com.log.socket.constants.*;
+import com.log.socket.exception.LogPException;
 import com.log.socket.logp.LogP;
 import com.log.socket.logp.head.*;
 import com.log.util.Conversion;
 import com.log.util.LogProtocolUtils;
 import com.log.util.PrintUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -24,8 +23,9 @@ import java.util.List;
 
 import static com.log.socket.logp.head.FrameHead.SIZE;
 
+@ChannelHandler.Sharable
 public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame, LogP> {
-    private int lengthFieldEndOffset;
+    private final int lengthFieldEndOffset;
     public static final Charset CHARSET = Charset.forName("utf-8");
     private static final Logger logger = LoggerFactory.getLogger(LogProtocolCodec.class);
 
@@ -58,7 +58,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         start += StartFlag.SIZE;
 
         //encode size
-        if (head.getSize() != null){
+        if (head.getSize() != null) {
             Conversion.shortToByteArray(head.getSize().getValue(), 0, result, start, Size.SIZE);
         }
         start += Size.SIZE;
@@ -126,7 +126,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         logP.setHead(head);
         String body = in.readCharSequence(head.getSize().getValue() - SIZE, CHARSET).toString();
         logP.setBody(body);
-        logger.debug("decode: {}", logP);
+        logger.debug("decode: {} \n head frame:{}\n body:{}", logP, PrintUtils.toString1(headByte), body);
         out.add(logP);
     }
 
@@ -158,7 +158,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
 
         //validate checksum
         if (LogProtocolUtils.calculateChecksum(headBytes) != 0) {
-            throw new codecException("checksum error: " + PrintUtils.toString(headBytes));
+            throw new LogPException(RespondStatus.DECODE_ERROR, "checksum error: " + PrintUtils.toString(headBytes));
         }
 
         //parse start flag

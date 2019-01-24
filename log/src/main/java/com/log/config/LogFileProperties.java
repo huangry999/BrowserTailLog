@@ -1,10 +1,12 @@
 package com.log.config;
 
+import org.apache.commons.io.filefilter.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ConfigurationProperties(prefix = "log")
 @Component
@@ -35,5 +37,19 @@ public class LogFileProperties {
 
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
+    }
+
+    public IOFileFilter getFilter() {
+        IOFileFilter filter = new OrFileFilter(
+                this.suffix
+                        .stream()
+                        .map(SuffixFileFilter::new)
+                        .collect(Collectors.toList()));
+        if (this.recursive) {
+            filter = new OrFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+        } else {
+            filter = new AndFileFilter(FileFileFilter.FILE, filter);
+        }
+        return filter;
     }
 }

@@ -2,43 +2,54 @@ package com.log.service.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.socket.logp.LogP;
-import com.log.subscribe.SubscriberManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.util.Strings;
 
-public abstract class BasicRequestHandler implements RequestHandler {
+public abstract class BasicRequestHandler<T extends RequestParam> implements RequestHandler {
+    private final Class<T> clazz;
+
+    public BasicRequestHandler(Class<T> clazz) {
+        this.clazz = clazz;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, LogP msg) throws Exception {
+        this.authorization(ctx, msg);
         String body = msg.getBody();
-        CommonRequest request = this.parseBody(body);
+        T request = this.parseBody(body);
         this.handle(ctx, msg, request);
         ctx.channel().closeFuture().addListener(future -> this.onClose(ctx, future));
     }
 
+    @Override
+    public void authorization(ChannelHandlerContext ctx, LogP msg) throws Exception {
+        //do nothing
+    }
+
     /**
      * close socket callback interface to override
+     *
      * @param context context
-     * @param future close future
+     * @param future  close future
      */
-    protected void onClose(ChannelHandlerContext context, Future future){
+    protected void onClose(ChannelHandlerContext context, Future future) {
 
     }
 
     /**
      * parse body to java bean
      *
-     * @param body string body
-     * @return CommonRequest or child class
+     * @param body body json string
+     * @return PathRequest or child class
      * @throws Exception exception
      */
-    protected CommonRequest parseBody(String body) throws Exception {
+    protected T parseBody(String body) throws Exception {
         if (Strings.isBlank(body)) {
             return null;
         }
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(body, CommonRequest.class);
+        return objectMapper.readValue(body, clazz);
     }
 
     /**
@@ -49,6 +60,5 @@ public abstract class BasicRequestHandler implements RequestHandler {
      * @param request request
      * @throws Exception exception
      */
-    protected abstract void handle(ChannelHandlerContext ctx, LogP msg, CommonRequest request) throws Exception;
-
+    protected abstract void handle(ChannelHandlerContext ctx, LogP msg, T request) throws Exception;
 }
