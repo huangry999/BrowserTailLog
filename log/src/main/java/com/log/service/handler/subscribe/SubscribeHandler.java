@@ -11,7 +11,6 @@ import com.log.socket.logp.LogPFactory;
 import com.log.subscribe.LinkedSubscribe;
 import com.log.subscribe.SubscriberManager;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,22 +24,16 @@ import java.util.List;
 public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
 
     private final static Logger logger = LoggerFactory.getLogger(SubscribeHandler.class);
-    private final SubscriberManager subscriberManager;
     @Value("${log.windowSize}")
     private int windowSize;
     private final LogReader logReader;
+    private final SubscriberManager subscriberManager;
 
     @Autowired
     public SubscribeHandler(SubscriberManager subscriberManager, LogReader logReader) {
         super(PathRequest.class);
-        this.subscriberManager = subscriberManager;
         this.logReader = logReader;
-    }
-
-    @Override
-    protected void onClose(ChannelHandlerContext ctx, Future future) {
-        logger.debug("{} close and remove all subscribers", ctx.channel().remoteAddress());
-        this.subscriberManager.remove(ctx);
+        this.subscriberManager = subscriberManager;
     }
 
     @Override
@@ -63,14 +56,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                         .setMode(Mode.MODIFY)
                         .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
-                ctx.writeAndFlush(logP).sync().addListener(future -> {
-                    if (future.isSuccess()) {
-                        subscriber.setReadIndex(subscriber.getReadIndex() + contents.size());
-                        logger.debug("send success, the subscribe read index add to {}", subscriber.getReadIndex());
-                    } else {
-                        throw new RuntimeException("writeAndFlush error");
-                    }
-                });
+                ctx.writeAndFlush(logP).sync();
             } catch (Exception e) {
                 logger.error(
                         "log {} modified and send frame to {} error: ",
@@ -85,22 +71,15 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
             try {
                 subscriber.getLock().lock();
                 subscriber.setReadIndex(0);
-                logger.debug("{} delete, set subscribe read index to {}, dst: {}",
+                logger.debug("{} delete, remove the subscriber to {}",
                         file.getAbsolutePath(),
-                        subscriber.getReadIndex(),
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
                         .setMode(Mode.DELETE)
                         .setRespond(Respond.NEW_LOG_CONTENT)
                         .addData("path", s.getFile().getPath())
                         .create();
-                ctx.writeAndFlush(logP).sync().addListener(future -> {
-                    if (future.isSuccess()) {
-                        logger.debug("send success");
-                    } else {
-                        throw new RuntimeException("writeAndFlush error ");
-                    }
-                });
+                ctx.writeAndFlush(logP).sync();
             } catch (Exception e) {
                 logger.error(
                         "log {} delete and send frame to {} error: ",
@@ -128,14 +107,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                         .setMode(Mode.CREATE)
                         .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
-                ctx.writeAndFlush(logP).sync().addListener(future -> {
-                    if (future.isSuccess()) {
-                        subscriber.setReadIndex(lastLineIndex);
-                        logger.debug("send success, the subscribe read index add to {}", subscriber.getReadIndex());
-                    } else {
-                        throw new RuntimeException("writeAndFlush error ");
-                    }
-                });
+                ctx.writeAndFlush(logP).sync();
             } catch (Exception e) {
                 logger.error(
                         "log {} create and send frame to {} error: ",
@@ -162,14 +134,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                     .addData("path", file.getPath())
                     .setRespond(Respond.LOG_CONTENT_BETWEEN)
                     .create();
-            ctx.writeAndFlush(logP).sync().addListener(future -> {
-                if (future.isSuccess()) {
-                    subscriber.setReadIndex(skip + contents.size());
-                    logger.debug("send success, the subscribe read index add to {}", subscriber.getReadIndex());
-                } else {
-                    throw new RuntimeException("writeAndFlush error " + future.cause());
-                }
-            });
+            ctx.writeAndFlush(logP).sync();
         } catch (Exception e) {
             logger.error(
                     "log {} init and send frame to {} error: ",
@@ -181,6 +146,4 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
         }
         subscriberManager.subscribe(subscriber);
     }
-
-
 }

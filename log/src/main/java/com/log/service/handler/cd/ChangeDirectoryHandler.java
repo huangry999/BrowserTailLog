@@ -56,8 +56,12 @@ public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest>
             result = this.logFileService.listLogFiles(request.getPath(), false);
             subscriberManager.remove(ctx, DirectoryFileFilter.INSTANCE);
             Subscriber subscriber = new LinkedSubscribe(new File(request.getPath()), ctx);
-            subscriber.setDeleteHandler(s -> send(logFileService.listRoot(), ctx, null));
+            subscriber.setDeleteHandler(s -> {
+                send(logFileService.listRoot(), ctx, null);
+                logger.debug("{} delete, send empty dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
+            });
             subscriber.setModifyHandler(s -> {
+                logger.debug("{} modify, send latest dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
                 List<LogFileAttribute> data = this.logFileService.listLogFiles(request.getPath(), false);
                 send(data, ctx, request.getPath());
             });
@@ -76,12 +80,6 @@ public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest>
         if (parent != null && FileUtils.checkValid(parent.toString())) {
             respond.addData("rollback", parent.toString());
         }
-        ctx.writeAndFlush(respond.create()).addListener(future -> {
-            if (future.isSuccess()) {
-                logger.debug("send successfully");
-            } else {
-                throw new RuntimeException("writeAndFlush error");
-            }
-        });
+        ctx.writeAndFlush(respond.create());
     }
 }

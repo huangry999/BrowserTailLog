@@ -33,6 +33,6 @@ public class ExceptionHandler extends ChannelInboundHandlerAdapter {
         }
         logger.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);
         CloseWebSocketFrame response = new CloseWebSocketFrame(RespondStatus.INTERNAL_SERVER_ERROR.getCode(), cause.getMessage());
-        ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().writeAndFlush(response);
     }
 }

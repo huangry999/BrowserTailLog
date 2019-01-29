@@ -5,12 +5,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Subscriber {
-    private final File file;
-
-
-    private SubscribeEventHandler modifyHandler;
-    private SubscribeEventHandler deleteHandler;
-    private SubscribeEventHandler createHandler;
+    protected final File file;
+    protected SubscribeEventHandler modifyHandler;
+    protected SubscribeEventHandler deleteHandler;
+    protected SubscribeEventHandler createHandler;
 
     public Subscriber(File file) {
         this.file = file;
@@ -44,4 +42,11 @@ public class Subscriber {
         return file;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Subscriber{");
+        sb.append("file=").append(file.getAbsoluteFile());
+        sb.append('}');
+        return sb.toString();
+    }
 }

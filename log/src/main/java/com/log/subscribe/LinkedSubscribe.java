@@ -31,4 +31,15 @@ public final class LinkedSubscribe extends Subscriber {
     public Lock getLock() {
         return lock;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("LinkedSubscribe{");
+        sb.append("file=").append(file.getAbsoluteFile());
+        sb.append(", channelIsActive=").append(context.channel().isActive());
+        sb.append(", remoteAddress=").append(context.channel().remoteAddress());
+        sb.append(", readIndex=").append(readIndex);
+        sb.append('}');
+        return sb.toString();
+    }
 }

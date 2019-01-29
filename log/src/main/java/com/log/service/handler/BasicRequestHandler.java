@@ -2,9 +2,12 @@ package com.log.service.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.socket.logp.LogP;
+import com.log.subscribe.SubscriberManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BasicRequestHandler<T extends RequestParam> implements RequestHandler {
     private final Class<T> clazz;
@@ -19,22 +22,11 @@ public abstract class BasicRequestHandler<T extends RequestParam> implements Req
         String body = msg.getBody();
         T request = this.parseBody(body);
         this.handle(ctx, msg, request);
-        ctx.channel().closeFuture().addListener(future -> this.onClose(ctx, future));
     }
 
     @Override
     public void authorization(ChannelHandlerContext ctx, LogP msg) throws Exception {
         //do nothing
-    }
-
-    /**
-     * close socket callback interface to override
-     *
-     * @param context context
-     * @param future  close future
-     */
-    protected void onClose(ChannelHandlerContext context, Future future) {
-
     }
 
     /**

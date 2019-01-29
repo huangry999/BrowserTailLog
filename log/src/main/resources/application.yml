@@ -28,12 +28,20 @@ monitor:
 
 reader:
   samplingInterval: 1000
+
+system:
+  subscribe:
+    enabledLog: false
+    logSamplingMin: 5
 ---
 spring:
   profiles: dev
 server:
   port: 8080
   address: 127.0.0.1
+system:
+  subscribe:
+    enabledLog: true
 
 ---
 spring:

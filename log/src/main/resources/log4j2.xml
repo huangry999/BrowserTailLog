@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Configuration respondStatus="trace" strict="true" name="LogConfig">
     <Properties>
-        <Property name="filepath">/tmp/log</Property>
+        <Property name="filepath">/log</Property>
     </Properties>
     <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
@@ -9,6 +9,17 @@
                 <Pattern>[%d] - [%c] - [%highlight{%level}] - [%method] - [%t] - %msg%n</Pattern>
             </PatternLayout>
         </Console>
+        <RollingFile name="subscriberStats"
+                     fileName="${filepath}/subscriberStats.log"
+                     filePattern="${filepath}/bak/logService-%d{yy-MM-dd HH:mm:ss}.log.gz">
+            <PatternLayout>
+                <Pattern>[%d] %msg%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="0"/>
+        </RollingFile>
         <RollingFile name="logService"
                      fileName="${filepath}/logService.log"
                      filePattern="${filepath}/bak/logService-%d{yy-MM-dd HH:mm:ss}.log.gz">
@@ -16,19 +27,21 @@
                 <Pattern>[%d] - [%c] - [%highlight{%level}] - [%method] - [%t] - %msg%n</Pattern>
             </PatternLayout>
             <Policies>
-                <CronTriggeringPolicy schedule="1 * * * * ?" evaluateOnStartup="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
+            <DefaultRolloverStrategy max="2"/>
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="fileLogger" level="info">
-            <AppenderRef ref="logService"/>
-            <AppenderRef ref="STDOUT"/>
+        <Logger name="com.log.subscribe" level="debug" additivity="false">
+            <appender-ref ref="subscriberStats"/>
         </Logger>
-
-        <Root level="debug">
-            <AppenderRef ref="STDOUT"/>
-        </Root>
+        <Logger name="com.log" level="debug">
+            <appender-ref ref="logService"/>
+        </Logger>
+        <root level="debug">
+            <appender-ref ref="STDOUT"/>
+        </root>
     </Loggers>
 
 </Configuration>

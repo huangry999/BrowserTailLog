@@ -59,20 +59,29 @@ class CommonIoMonitor implements Monitor {
                         @Override
                         public void onFileCreate(File file) {
                             listener.onFileCreate(file);
+                            if (path.equals(file.getParent())){
+                                this.onDirectoryChange(file.getParentFile());
+                            }
                         }
 
                         @Override
                         public void onFileChange(File file) {
                             if (file.exists()){
                                 listener.onFileModify(file);
+                                if (path.equals(file.getParent())){
+                                    this.onDirectoryChange(file.getParentFile());
+                                }
                             }else{
-                                listener.onFileDelete(file);
+                                this.onFileDelete(file);
                             }
                         }
 
                         @Override
                         public void onFileDelete(File file) {
                             listener.onFileDelete(file);
+                            if (path.equals(file.getParent())){
+                                this.onDirectoryChange(file.getParentFile());
+                            }
                         }
 
                         @Override
