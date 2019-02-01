@@ -29,7 +29,7 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
         result.type = (file.isDirectory() ? FileType.DIRECTORY : FileType.LOG_FILE).getCode();
         result.path = file.toPath().toString();
         result.name = file.getName();
-        result.key = file.hashCode() + "";
+        result.key = file.getAbsolutePath().hashCode() + "";
         Date md = new Date(file.lastModified());
         result.modifyUtcTime = DateFormatUtils.format(md, "yyyy-MM-dd'T'HH:mm'Z'");
         if (!file.isDirectory()) {
