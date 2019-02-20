@@ -23,16 +23,19 @@ log:
 init:
   fetchTailByPercent: 75
 
+proxy:
+  address: 192.168.1.101
+  port: 8082
+
 monitor:
   intervalMs: 2000
-
-reader:
-  samplingInterval: 1000
 
 system:
   subscribe:
     enabledLog: false
     logSamplingMin: 5
+  reader:
+    samplingInterval: 1000
 ---
 spring:
   profiles: dev
