@@ -70,7 +70,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
       if (isNaN(lineNo) || isNaN(take)) {
         return;
       }
-      dispatch(findByLine(path, parseInt(lineNo, 10), parseInt(take), 10));
+      dispatch(findByLine(path, parseInt(lineNo, 10), parseInt(take)));
     },
   }
 }

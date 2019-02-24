@@ -4,6 +4,7 @@ import { Route, Switch, Router } from 'react-router-dom'
 import Dashboarder from './Dashboarder'
 import LogView from './containers/LogView'
 import LoginPage from './containers/LoginPage'
+import HostTableConnect from './containers/HostTableConnect'
 import { createHashHistory } from 'history'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from './config/configureStore'
@@ -18,7 +19,8 @@ const Root = ({ store }) => {
           <Switch>
             <Route path="/log/:key" component={LogView} />
             <Route path="/login" component={LoginPage} />
-            <Route path="/" component={Dashboarder} />
+            <Route path="/log" component={Dashboarder} />
+            <Route path="/" component={HostTableConnect} />
           </Switch>
         </Router>
       </PersistGate>

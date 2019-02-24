@@ -141,7 +141,7 @@ export function log(state = { data: [] }, action) {
   }
 }
 
-export function configs(state = { windowSize: 100 }, action) {
+export function configs(state = { windowSize: 100, shrinkThreshold: 100 }, action) {
   switch (action.type) {
     case Types.RESP_INIT:
       return Object.assign(state, action.configs);
@@ -184,6 +184,19 @@ export function openLogMap(state = {}, action) {
         }
       });
       return ns;
+    default:
+      return state;
+  }
+}
+
+export function host(state = { hosts: [], currentHost: undefined }, action) {
+  switch (action.type) {
+    case Types.RESP_FETCH_HOST:
+      state.hosts = action.hosts;
+      return state;
+    case Types.INTO_HOST:
+      state.currentHost = action.host;
+      return state;
     default:
       return state;
   }

@@ -75,3 +75,11 @@ export const loginSuccess = (token) => {
   history.goBack();
   return { type: Types.RESP_LOGIN_SUCCESS, token }
 }
+
+export const fetchHost = () => ({ type: Types.FETCH_HOST })
+export const setHost = (hosts) => ({ type: Types.RESP_FETCH_HOST, hosts })
+
+export const intoHost = (host) => {
+  history.push("/log");
+  return { type: Types.INTO_HOST, host }
+}

@@ -6,6 +6,8 @@ netty:
   ssl: false
   port: 8081
   address: 192.168.1.101
+  proxy:
+    port: 8082
 
 security:
   auth: 'sa'
@@ -23,10 +25,6 @@ log:
 init:
   fetchTailByPercent: 75
 
-proxy:
-  address: 192.168.1.101
-  port: 8082
-
 monitor:
   intervalMs: 2000
 
@@ -36,12 +34,16 @@ system:
     logSamplingMin: 5
   reader:
     samplingInterval: 1000
+  hosts:
+      - {ip: 192.168.1.101, name: Main Host}
 ---
 spring:
   profiles: dev
 server:
   port: 8080
   address: 127.0.0.1
+  servlet:
+    context-path: /log
 system:
   subscribe:
     enabledLog: true
