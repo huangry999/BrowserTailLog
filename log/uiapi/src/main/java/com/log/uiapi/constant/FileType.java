@@ -1,4 +1,4 @@
-package com.log.constant;
+package com.log.uiapi.constant;
 
 import com.log.common.constant.CodedConstant;
 

@@ -1,13 +1,18 @@
-package com.log.util;
+package com.log.uiapi.util;
 
 import com.log.common.spring.SpringUtils;
-import com.log.config.LogFileProperties;
+import com.log.uiapi.config.LogFileProperties;
+import com.log.uiapi.protocol.codec.LogProtocolCodec;
+import com.log.uiapi.service.bean.LogLineText;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FileUtils {
     /**
@@ -64,5 +69,29 @@ public class FileUtils {
         return properties.getPath()
                 .stream()
                 .anyMatch(root -> Paths.get(path).toAbsolutePath().startsWith(Paths.get(root)));
+    }
+
+    /**
+     * Splits log file by line, skip and take the special context.
+     *
+     * @param log  log file
+     * @param skip skip count
+     * @param take take count
+     * @return log context order by line no asc
+     * @throws IOException io exception
+     */
+    public static List<LogLineText> getLogText(File log, long skip, Integer take) throws IOException {
+        if (!log.exists() || !log.isFile()) {
+            return new ArrayList<>();
+        }
+        List<String> content = Files.lines(log.toPath(), LogProtocolCodec.CHARSET)
+                .skip(skip)
+                .limit(take)
+                .collect(Collectors.toList());
+        List<LogLineText> result = new ArrayList<>(content.size());
+        for (int i = 0; i < content.size(); i++) {
+            result.add(new LogLineText(skip + i + 1, content.get(i)));
+        }
+        return result;
     }
 }

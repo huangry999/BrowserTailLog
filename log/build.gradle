@@ -3,43 +3,61 @@ buildscript {
         springBootVersion = '2.0.2.RELEASE'
     }
     repositories {
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
         mavenCentral()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.5")
     }
 }
+def grpcVersion = '1.18.0'
+def protobufVersion = '3.6.1'
+def protocVersion = protobufVersion
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'idea'
+    apply plugin: 'application'
+    apply plugin: 'com.google.protobuf'
+    
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/spring' }
+        maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
+        mavenCentral()
+    }
+    configurations {
+        all*.exclude module: 'spring-boot-starter-logging'
+    }
+    dependencies {
+        //spring boot
+        compile('org.springframework.boot:spring-boot-starter-web')
+        compile('org.springframework.boot:spring-boot-starter-webflux')
+        compile('org.springframework.boot:spring-boot-starter-actuator')
+        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+        compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '1.5.9.RELEASE'
+        compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-
-group = 'com.log'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        // grpc
+        implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+        implementation "io.grpc:grpc-stub:${grpcVersion}"
+        compileOnly "javax.annotation:javax.annotation-api:1.2"
+        runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+        //submodule
+        compile project(':common')
+        //test
+        testCompile('org.springframework.boot:spring-boot-starter-test')
+        testCompile('io.projectreactor:reactor-test')
+        compileOnly "org.springframework.boot:spring-boot-configuration-processor"
+    }
+    group = 'com.log'
+    version = '1.0-SNAPSHOT'
+    sourceCompatibility = 1.8
 }
-ext {
-    springCloudVersion = 'Finchley.BUILD-SNAPSHOT'
-}
-configurations {
-    all*.exclude module: 'spring-boot-starter-logging'
-}
-dependencies {
-    compile('org.springframework.boot:spring-boot-starter-web')
-    compile('org.springframework.boot:spring-boot-starter-webflux')
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '1.5.9.RELEASE'
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'com.auth0', name: 'java-jwt', version: '3.5.0'
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('io.projectreactor:reactor-test')
-    compileOnly "org.springframework.boot:spring-boot-configuration-processor"
-}
-

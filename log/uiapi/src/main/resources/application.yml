@@ -1,0 +1,56 @@
+spring:
+  profiles:
+    active: dev
+netty:
+  httpBlockMaxByte: 65535
+  ssl: false
+  port: 8081
+  address: 192.168.1.101
+  proxy:
+    port: 8082
+
+#security:
+#  auth: 'sa'
+#  expireMinutes: 30
+
+log:
+  path:
+    - "G:\\log"
+  suffix:
+    - ".log"
+  recursive: true
+  windowSize: 100
+  shrinkThreshold: 100
+
+init:
+  fetchTailByPercent: 75
+
+monitor:
+  intervalMs: 2000
+
+system:
+  subscribe:
+    enabledLog: false
+    logSamplingMin: 5
+  reader:
+    samplingInterval: 1000
+  hosts:
+      - {ip: 192.168.1.101, name: Main Host}
+---
+spring:
+  profiles: dev
+server:
+  port: 8080
+  address: 127.0.0.1
+#  servlet:
+#    context-path: /log
+system:
+  subscribe:
+    enabledLog: true
+
+---
+spring:
+  profiles:  prod
+server:
+  port: 80
+  address: 120.79.200.215
