@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -13,46 +14,37 @@ import org.springframework.security.oauth2.provider.token.store.InMemoryTokenSto
 
 @Configuration
 @EnableAuthorizationServer
-public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
-    private String clientid = "tutorialspoint";
-    private String clientSecret = "my-secret-key";
-
+public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+    private final static String CLIENT_ID = "logsystem";
+    private final static String CLIENT_PW = "D3G#2rg&1";
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
+    public AuthorizationServerConfig(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
-    }
-
-//    @Bean
-//    public JwtAccessTokenConverter tokenEnhancer() {
-//        return new JwtAccessTokenConverter();
-//    }
-
-    @Bean
-    public TokenStore tokenStore() {
-        //return new JwtTokenStore(tokenEnhancer());
-        return new InMemoryTokenStore();
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore());
-        //endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore()).accessTokenConverter(tokenEnhancer());
+    public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
+        endpoints.tokenStore(tokenStore())
+                .authenticationManager(authenticationManager);
     }
-
-//    @Override
-//    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-//        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
-//    }
 
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                .withClient("client")
-                .secret("clientpassword")
+                .withClient(CLIENT_ID)
+                .secret(passwordEncoder.encode(CLIENT_PW))
                 .scopes("read", "write")
                 .authorizedGrantTypes("password")
                 .accessTokenValiditySeconds(3600);
     }
+
+    @Bean
+    public TokenStore tokenStore() {
+        return new InMemoryTokenStore();
+    }
+
 }

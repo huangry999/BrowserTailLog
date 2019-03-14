@@ -1,11 +1,9 @@
 package com.log;
 
-import java.io.File;
-import java.net.URI;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        URI uri = new URI("ws://127.0.0.1:8080/websocket");
-        System.out.println(uri.getHost());
+        System.out.println(new BCryptPasswordEncoder().encode("clientpassword"));
     }
 }

@@ -11,11 +11,9 @@ export const updateFileList = (files = [], dir, rollback) => ({
 
 let configs = { windowSize: 100 }
 export const init = () => {
-  const uuidv4 = require('uuid/v4');
-  const sessionId = uuidv4();
-  return { type: Types.INIT, sessionId }
+  return { type: Types.INIT }
 }
-export const getInit = (c = {}) => {
+export const setInit = (c = {}) => {
   configs = c;
   return { type: Types.RESP_INIT, configs: c }
 }
@@ -68,12 +66,22 @@ export const gotoLogin = (message) => {
   history.push("/login");
   return { type: Types.GOTO_LOGIN, message }
 }
-export const doLogin = (id, password) => {
-  return { type: Types.LOGIN, id, password }
+export const doLogin = (password) => {
+  const crypto = require('crypto');
+  const hash = crypto.createHash('sha256');
+  hash.update("34)8e$" + password);
+  const hashPw = hash.digest('hex');
+  // return { type: Types.LOGIN, password: hashPw }
+  return { type: Types.LOGIN, password }
 }
 export const loginSuccess = (token) => {
-  history.goBack();
+  //history.goBack();
   return { type: Types.RESP_LOGIN_SUCCESS, token }
+}
+
+export const gotoHost = () => {
+  history.push("/host");
+  return { type: Types.GOTO_HOST }
 }
 
 export const fetchHost = () => ({ type: Types.FETCH_HOST })

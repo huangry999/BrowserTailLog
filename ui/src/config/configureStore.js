@@ -8,6 +8,7 @@ import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import { combineReducers } from 'redux'
 
+
 const loggerMiddleware = createLogger()
 const sagaMiddleware = createSagaMiddleware()
 
@@ -25,4 +26,4 @@ export const store = createStore(combineReducers({
   loggerMiddleware))
 export const persistor = persistStore(store);
 export const socket = setupSocket(store.dispatch);
-sagaMiddleware.run(handleNewMessage, { socket, store });
+sagaMiddleware.run(handleNewMessage, { socket });

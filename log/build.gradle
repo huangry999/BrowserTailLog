@@ -33,16 +33,13 @@ allprojects {
         maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
         mavenCentral()
     }
-    configurations {
-        all*.exclude module: 'spring-boot-starter-logging'
-    }
+
     dependencies {
         //spring boot
         compile('org.springframework.boot:spring-boot-starter-web')
         compile('org.springframework.boot:spring-boot-starter-webflux')
         compile('org.springframework.boot:spring-boot-starter-actuator')
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
-        compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '1.5.9.RELEASE'
         compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
         // grpc

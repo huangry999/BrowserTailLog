@@ -1,29 +1,26 @@
-import { doLogin } from '../action';
+import { doLogin, gotoHost } from '../action';
 import LoginForm from '../components/LoginForm';
 import { connect } from 'react-redux';
 
-const mapStateToProps = ({ tipInfo, system }) => {
-  return { tip: tipInfo.loginTip, system }
+const mapStateToProps = ({ tipInfo, system, configs }) => {
+  return { tip: tipInfo.loginTip, system, configs }
 }
 
 const mapDispatchToProps = (dispatch) => {
-  return {
-    doLogin: (id, password) => {
-      dispatch(doLogin(id, password));
-    }
-  }
+  return { dispatch }
 }
 
 const mergeProps = (stateProps, dispatchProps) => {
+  const { dispatch } = dispatchProps;
   return {
     tip: stateProps.tip,
     onSubmit: (form) => {
-      const id = stateProps.system.sessionId;
-      const crypto = require('crypto');
-      const hash = crypto.createHash('sha256');
-      hash.update(id + "34)8e$" + form.password);
-      const hashPw = hash.digest('hex');
-      dispatchProps.doLogin(id, hashPw);
+      dispatch(doLogin(form.password));
+    },
+    componentDidMount: () => {
+      if (!stateProps.configs.needAuth) {
+        dispatch(gotoHost());
+      }
     }
   }
 }

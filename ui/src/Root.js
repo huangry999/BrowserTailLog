@@ -18,9 +18,9 @@ const Root = ({ store }) => {
         <Router history={history}>
           <Switch>
             <Route path="/log/:key" component={LogView} />
-            <Route path="/login" component={LoginPage} />
             <Route path="/log" component={Dashboarder} />
-            <Route path="/" component={HostTableConnect} />
+            <Route path="/host" component={HostTableConnect} />
+            <Route path="/" component={LoginPage} />
           </Switch>
         </Router>
       </PersistGate>

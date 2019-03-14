@@ -1,6 +1,6 @@
 package com.log.proxy.socket.handler;
 
-import com.log.util.SpringUtils;
+import com.log.common.spring.SpringUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -41,7 +41,7 @@ public class ProxyHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
         Bootstrap b = new Bootstrap();
         b.group(inboundChannel.eventLoop())
                 .channel(ctx.channel().getClass())
-                .handler(new WebSocketClientInitializer(remoteHost, inboundChannel))
+                //.handler(new WebSocketClientInitializer(remoteHost, inboundChannel))
                 .option(ChannelOption.AUTO_READ, false);
         ChannelFuture f = b.connect(remoteHost, remotePort);
         outboundChannel = f.channel();

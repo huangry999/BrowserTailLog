@@ -3,6 +3,11 @@ import { Form, Icon, Input, Button } from 'antd'
 import './LoginForm.css'
 
 class NormalLoginForm extends React.Component {
+
+  componentDidMount() {
+    this.props.componentDidMount();
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {

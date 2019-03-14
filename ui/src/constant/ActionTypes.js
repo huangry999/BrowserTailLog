@@ -5,6 +5,7 @@ export const LOGIN = 'LOGIN';
 
 export const INTO_DIR = 'INTO_DIR';
 
+export const GOTO_HOST = 'GOTO_HOST';
 export const FETCH_HOST = 'FETCH_HOST';
 export const INTO_HOST = 'INTO_HOST';
 
@@ -16,10 +17,12 @@ export const REPLACE_LOG_CONTENT = 'REPLACE_LOG_CONTENT';
 export const SET_LOCK_BOTTOM = 'SET_LOCK_BOTTOM';
 export const FIND_BY_LINE = 'FIND_BY_LINE';
 
+//socket resp
 export const RESP_INIT = "RESP_INIT";
 export const RESP_LIST_FILE = 'RESP_LIST_FILE';
 export const RESP_NEW_LOG_CONTENT = 'RESP_NEW_LOG_CONTENT';
 export const RESP_GET_LOG_BETWEEN = 'RESP_GET_LOG_BETWEEN';
-export const RESP_LOGIN_SUCCESS = 'RESP_LOGIN_SUCCESS';
 
+//http resp
 export const RESP_FETCH_HOST = 'RESP_FETCH_HOST';
+export const RESP_LOGIN_SUCCESS = 'RESP_LOGIN_SUCCESS';

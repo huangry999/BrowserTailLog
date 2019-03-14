@@ -23,9 +23,9 @@ const setupSocket = (dispatch) => {
           }
         }
         switch (respond) {
-          case Respond.INIT:
-            dispatch(getInit(data));
-            break;
+          // case Respond.INIT:
+          //   dispatch(getInit(data));
+          //   break;
           case Respond.LIST_FILE:
             dispatch(updateFileList(data.files, data.dir, data.rollback));
             break;

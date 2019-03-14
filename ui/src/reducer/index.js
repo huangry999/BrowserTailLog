@@ -141,7 +141,7 @@ export function log(state = { data: [] }, action) {
   }
 }
 
-export function configs(state = { windowSize: 100, shrinkThreshold: 100 }, action) {
+export function configs(state = { windowSize: 100, shrinkThreshold: 100, needAuth: true }, action) {
   switch (action.type) {
     case Types.RESP_INIT:
       return Object.assign(state, action.configs);
