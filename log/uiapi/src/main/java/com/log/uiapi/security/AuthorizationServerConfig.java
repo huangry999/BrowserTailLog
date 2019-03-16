@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 
@@ -19,6 +20,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private final static String CLIENT_PW = "D3G#2rg&1";
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private AuthorizationServerEndpointsConfigurer endpoints;
 
     @Autowired
     public AuthorizationServerConfig(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
@@ -30,6 +32,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints.tokenStore(tokenStore())
                 .authenticationManager(authenticationManager);
+        this.endpoints = endpoints;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .secret(passwordEncoder.encode(CLIENT_PW))
                 .scopes("read", "write")
                 .authorizedGrantTypes("password")
-                .accessTokenValiditySeconds(3600);
+                .accessTokenValiditySeconds(6000000);
     }
 
     @Bean
@@ -47,4 +50,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return new InMemoryTokenStore();
     }
 
+    public DefaultTokenServices getServices() {
+        return (DefaultTokenServices) endpoints.getDefaultAuthorizationServerTokenServices();
+    }
 }

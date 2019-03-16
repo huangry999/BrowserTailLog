@@ -23,11 +23,10 @@ public class ExceptionHandler extends ChannelInboundHandlerAdapter {
         buf.readBytes(frame);
         if (cause instanceof LogPException) {
             final RespondStatus respondStatus = ((LogPException) cause).getRespondStatus();
-            switch (respondStatus) {
-                case UNAUTHORIZED:
-                    LogP response = LogPFactory.defaultInstance0().create0(respondStatus, cause.getMessage());
-                    ctx.channel().writeAndFlush(response);
-                    return;
+            if (respondStatus == RespondStatus.UNAUTHORIZED) {
+                LogP response = LogPFactory.defaultInstance0().create0(respondStatus, cause.getMessage());
+                ctx.channel().writeAndFlush(response);
+                return;
             }
         }
         logger.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);

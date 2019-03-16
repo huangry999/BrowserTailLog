@@ -1,6 +1,7 @@
 package com.log.uiapi.security;
 
 import com.log.common.printer.BytePrinter;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
@@ -16,7 +17,8 @@ import java.security.NoSuchAlgorithmException;
 @Service
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
-    @Value("${security.auth:''}")
+    private static final String DEFAULT_PASSWORD = "3%d8b";
+    @Value("${security.auth}")
     private String systemPassword;
     private final static String SALT = "34)8e$";
 
@@ -27,19 +29,18 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        final MessageDigest messageDigest;
-//        try {
-//            messageDigest = MessageDigest.getInstance("SHA-256");
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new RuntimeException(e);
-//        }
-//        final String p = SALT + systemPassword;
-//        messageDigest.update(p.getBytes());
-//        String encrypt = BytePrinter.toString0(messageDigest.digest(), "");
-//        System.out.println(encrypt);
+        final MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        final String p = SALT + (Strings.isBlank(systemPassword) ? DEFAULT_PASSWORD : systemPassword);
+        messageDigest.update(p.getBytes());
+        String encrypt = BytePrinter.toString0(messageDigest.digest(), "");
         return User.builder()
                 .username("default")
-                .password(passwordEncoder.encode(systemPassword))
+                .password(passwordEncoder.encode(encrypt))
                 .roles("admin")
                 .build();
     }

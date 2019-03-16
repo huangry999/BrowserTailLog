@@ -2,13 +2,17 @@ export const IGNORE = 'IGNORE';
 export const INIT = "INIT";
 export const GOTO_LOGIN = 'GOTO_LOGIN';
 export const LOGIN = 'LOGIN';
+export const UPLOAD_TOKEN = 'UPLOAD_TOKEN';
 
+// directory request
 export const INTO_DIR = 'INTO_DIR';
 
+// host request
 export const GOTO_HOST = 'GOTO_HOST';
 export const FETCH_HOST = 'FETCH_HOST';
 export const INTO_HOST = 'INTO_HOST';
 
+//log request
 export const OPEN_LOG = 'OPEN_LOG';
 export const LOAD_LOG = 'LOAD_LOG';
 export const GET_LOG_BETWEEN = 'GET_LOG_BETWEEN';

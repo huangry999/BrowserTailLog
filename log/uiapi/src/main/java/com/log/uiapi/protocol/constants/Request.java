@@ -5,19 +5,18 @@ import com.log.common.spring.SpringUtils;
 import com.log.uiapi.service.handler.RequestHandler;
 import com.log.uiapi.service.handler.cancelsubscribe.CancelSubscribeHandler;
 import com.log.uiapi.service.handler.cd.ChangeDirectoryHandler;
-import com.log.uiapi.service.handler.init.InitHandler;
-import com.log.uiapi.service.handler.login.LoginHandler;
 import com.log.uiapi.service.handler.requestbetween.RequestBetweenHandler;
 import com.log.uiapi.service.handler.subscribe.SubscribeHandler;
+import com.log.uiapi.service.handler.token.TokenHandler;
 
 public enum Request implements CodedConstant {
     NONE(0x0, null),
-    INIT(0x1, InitHandler.class),
+    TOKEN(0x1, TokenHandler.class),
     SUBSCRIBE(0x2, SubscribeHandler.class),
     CANCEL_SUBSCRIBE(0x3, CancelSubscribeHandler.class),
     REQUEST_BETWEEN(0x4, RequestBetweenHandler.class),
     CHANGE_DIR(0x5, ChangeDirectoryHandler.class),
-    LOGIN(0x6, LoginHandler.class),;
+    ;
 
     private int code;
     private Class<? extends RequestHandler> handleClass;

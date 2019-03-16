@@ -10,7 +10,7 @@ netty:
     port: 8082
 
 security:
-  auth: 'sa'
+  auth:
   expireMinutes: 30
 
 log:

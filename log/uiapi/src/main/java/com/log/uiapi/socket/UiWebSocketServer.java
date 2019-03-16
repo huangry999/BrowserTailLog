@@ -1,6 +1,5 @@
 package com.log.uiapi.socket;
 
-import com.log.common.spring.SpringUtils;
 import com.log.uiapi.protocol.codec.LogProtocolCodec;
 import com.log.uiapi.socket.handler.BusinessHandler;
 import com.log.uiapi.socket.handler.ExceptionHandler;
@@ -20,6 +19,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.InetSocketAddress;
@@ -31,6 +31,10 @@ public class UiWebSocketServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private Channel channel;
+    @Value("${netty.ssl:false}")
+    private boolean enableSsl;
+    @Value("${netty.httpBlockMaxByte:65535}")
+    private int httpBlockMaxByte;
 
     /**
      * start netty service
@@ -45,7 +49,7 @@ public class UiWebSocketServer {
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new UiWebSocketInitializer());
+                .childHandler(new UiWebSocketInitializer(enableSsl, httpBlockMaxByte));
         bootstrap.bind(address).addListener((ChannelFutureListener) future -> channel = future.channel());
     }
 
@@ -65,17 +69,24 @@ public class UiWebSocketServer {
 class UiWebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
     private static final String WEBSOCKET_PATH = "/log";
+    private final boolean enableSsl;
+    private final int httpBlockMaxByte;
+
+    UiWebSocketInitializer(boolean enableSsl, int httpBlockMaxByte) {
+        this.enableSsl = enableSsl;
+        this.httpBlockMaxByte = httpBlockMaxByte;
+    }
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        if (SpringUtils.getProperty("netty.ssl", Boolean.class)) {
+        if (enableSsl) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
             SslContext cxt = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
             pipeline.addLast(cxt.newHandler(ch.alloc()));
         }
         pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(SpringUtils.getProperty("netty.httpBlockMaxByte", Integer.class)));
+        pipeline.addLast(new HttpObjectAggregator(httpBlockMaxByte));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
         pipeline.addLast(new LogProtocolCodec());

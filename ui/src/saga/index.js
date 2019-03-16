@@ -2,7 +2,7 @@ import { takeEvery, takeLatest, put, call, all } from 'redux-saga/effects'
 import * as types from '../constant/ActionTypes'
 import { encode } from '../protocol/ProtocolUtil'
 import Request from '../protocol/Request'
-import { getLogBetween, setHost, setInit, loginSuccess } from '../action'
+import { getLogBetween, setHost, setInit, loginSuccess, gotoHost, gotoLogin } from '../action'
 import * as Api from './fetchData'
 
 function* websocketWatch(socket) {
@@ -18,16 +18,17 @@ function* websocketWatch(socket) {
     const f = encode(Request.REQUEST_BETWEEN, { path: action.path, skip: action.skip, take: action.take });
     socket.send(f);
   })
-  // yield takeEvery(types.LOGIN, (action) => {
-  //   const f = encode(Request.LOGIN, { id: action.id, password: action.password });
-  //   socket.send(f);
-  // })
+  yield takeEvery(types.UPLOAD_TOKEN, (action) => {
+    const f = encode(Request.TOKEN, { token: action.token });
+    socket.send(f);
+  })
 }
 
 function* redirectWatch() {
   yield takeEvery(types.FIND_BY_LINE, (action) => {
     put(getLogBetween(action.path, action.lineNo - 1, action.take));
   });
+  yield takeEvery(types.RESP_LOGIN_SUCCESS, () => put(gotoHost()));
 }
 
 function* httpWatch() {
@@ -40,25 +41,20 @@ function* getHost() {
     const response = yield call(Api.fetchHosts);
     yield put(setHost(response));
   } catch (e) {
-    //TODO yield put(fetchFailed(e));
+    yield put(gotoLogin());
     return;
   }
 }
 function* getInit() {
-  try {
-    const response = yield call(Api.fetchInit);
-    yield put(setInit(response));
-  } catch (e) {
-    //TODO yield put(fetchFailed(e));
-    return;
-  }
+  const response = yield call(Api.fetchInit);
+  yield put(setInit(response));
 }
 function* login(action) {
   try {
     const response = yield call(Api.login, action.password);
     yield put(loginSuccess(response.access_token));
   } catch (e) {
-    //TODO yield put(fetchFailed(e));
+    yield put(gotoLogin('Login account or password error'));
     return;
   }
 }

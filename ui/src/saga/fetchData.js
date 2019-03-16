@@ -1,11 +1,13 @@
 import { Base64 } from 'js-base64'
 import { store } from '../config/configureStore'
 
+export const RESP_ERROR = 'RESP_ERROR';
 export const fetchHosts = async () => {
   const { token } = store.getState().system;
   const headers = new Headers();
   headers.append('Authorization', 'Bearer ' + token);
   const respond = await fetch('http://127.0.0.1:8080/log/host', { headers });
+  checkRespondStatus(respond);
   return respond.json();
 }
 export const fetchInit = async () => {
@@ -28,5 +30,11 @@ export const login = async (password) => {
     headers: headers,
     body: body,
   });
+  checkRespondStatus(respond);
   return respond.json();
+}
+function checkRespondStatus(respond) {
+  if (respond.status !== 200) {
+    throw RESP_ERROR;
+  }
 }

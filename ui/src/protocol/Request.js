@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const Request = {
-  INIT: {
+  TOKEN: {
     code: 1,
   },
   SUBSCRIBE: {
