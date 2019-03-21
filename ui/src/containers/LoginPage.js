@@ -1,9 +1,9 @@
-import { doLogin, gotoHost } from '../action';
+import { doLogin, gotoHost, gotoLogin } from '../action';
 import LoginForm from '../components/LoginForm';
 import { connect } from 'react-redux';
 
 const mapStateToProps = ({ tipInfo, system, configs }) => {
-  return { tip: tipInfo.loginTip, system, configs }
+  return { tip: tipInfo.loginTip, system, needAuth: configs.needAuth }
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -14,12 +14,17 @@ const mergeProps = (stateProps, dispatchProps) => {
   const { dispatch } = dispatchProps;
   return {
     tip: stateProps.tip,
+    needAuth: stateProps.needAuth,
     onSubmit: (form) => {
       dispatch(doLogin(form.password));
     },
-    componentDidMount: () => {
-      if (!stateProps.configs.needAuth) {
-        dispatch(gotoHost());
+    autoLoginIfEnableAnonymous: () => {
+      if (!stateProps.needAuth) {
+        if (!stateProps.system.token) {
+          dispatch(gotoLogin(), gotoHost);
+        } else {
+          dispatch(gotoHost());
+        }
       }
     }
   }

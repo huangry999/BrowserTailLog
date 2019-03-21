@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.log.fileservice.grpc";
+
+message ReadRequest {
+    string file_path = 1;
+    int64 skip = 2;
+    int64 take = 3;
+}
+message LineText {
+    int64 line_no = 1;
+    string text = 2;
+}
+message ReadRespond {
+    repeated LineText contents = 1;
+}
+
+message CountRequest {
+    string file_path = 1;
+}
+message CountRespond {
+    int64 total_line_no = 1;
+}
+
+service ReadService {
+    rpc Read (ReadRequest) returns (ReadRespond);
+    rpc Count (CountRequest) returns (CountRespond);
+}
+
+enum FileType {
+    FILE = 0;
+    DIRECTORY = 1;
+}
+enum EventType {
+    MODIFY = 0;
+    CREATE = 1;
+    DELETE = 2;
+}
+message Empty {
+}
+message FileEventNotification {
+    string file_path = 1;
+    FileType file_type = 2;
+    EventType event_type = 3;
+}
+service FileEventNotificationService {
+    rpc notify (FileEventNotification) returns (Empty);
+}

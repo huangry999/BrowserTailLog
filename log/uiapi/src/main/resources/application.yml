@@ -12,7 +12,6 @@ netty:
 security:
   auth:
   expireMinutes: 30
-
 log:
   path:
     - "G:\\log"

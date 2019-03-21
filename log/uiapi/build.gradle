@@ -9,3 +9,24 @@ dependencies{
     compile("org.springframework.boot:spring-boot-starter-jdbc")
     compile("com.h2database:h2:1.4.191")
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+startScripts.enabled = false
+mainClassName="com.log.uiapi.UiWebSocketApplication"

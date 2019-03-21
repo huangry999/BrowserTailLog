@@ -12,9 +12,9 @@ buildscript {
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.5")
     }
 }
-def grpcVersion = '1.18.0'
-def protobufVersion = '3.6.1'
-def protocVersion = protobufVersion
+//def grpcVersion = '1.18.0'
+//def protobufVersion = '3.6.1'
+//def protocVersion = protobufVersion
 allprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
@@ -22,7 +22,12 @@ allprojects {
     apply plugin: 'idea'
     apply plugin: 'application'
     apply plugin: 'com.google.protobuf'
-    
+    ext {
+        grpcVersion = '1.18.0'
+        protobufVersion = '3.6.1'
+        protocVersion = '3.6.1'
+    }
+
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
@@ -41,20 +46,28 @@ allprojects {
         compile('org.springframework.boot:spring-boot-starter-actuator')
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
         compile group: 'commons-io', name: 'commons-io', version: '2.6'
-
-        // grpc
-        implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-        implementation "io.grpc:grpc-stub:${grpcVersion}"
-        compileOnly "javax.annotation:javax.annotation-api:1.2"
-        runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
-        //submodule
-        compile project(':common')
-        //test
-        testCompile('org.springframework.boot:spring-boot-starter-test')
-        testCompile('io.projectreactor:reactor-test')
-        compileOnly "org.springframework.boot:spring-boot-configuration-processor"
+        compile group: 'org.projectlombok', name: 'lombok', version: '1.18.6'
+        compile "org.springframework.boot:spring-boot-configuration-processor"
     }
     group = 'com.log'
     version = '1.0-SNAPSHOT'
     sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+configure(allprojects - project(':common')) {
+    dependencies {
+        // grpc
+//        implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+//        implementation "io.grpc:grpc-stub:${grpcVersion}"
+//        compileOnly "javax.annotation:javax.annotation-api:1.2"
+//        implementation "io.grpc:grpc-netty:${grpcVersion}"
+//        runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+        compile 'io.github.lognet:grpc-spring-boot-starter:3.2.0'
+        //test
+        testCompile('org.springframework.boot:spring-boot-starter-test')
+        testCompile('io.projectreactor:reactor-test')
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+        //subproject
+        implementation project(":common")
+    }
 }

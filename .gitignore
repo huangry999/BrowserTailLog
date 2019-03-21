@@ -24,11 +24,9 @@ hs_err_pid*
 
 #idea
 .idea
-/log/out
-/log/.idea
-/log/build
-/log/gradle
-/log/.gradle
+out
+build
+.gradle
 
 #node
 /ui/package-lock.json

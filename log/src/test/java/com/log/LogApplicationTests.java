@@ -1,6 +1,5 @@
 package com.log;
 
-import com.log.config.HostsProperties;
 import com.log.config.LogFileProperties;
 import com.log.util.SpringUtils;
 import org.junit.Test;

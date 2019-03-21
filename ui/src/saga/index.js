@@ -2,8 +2,9 @@ import { takeEvery, takeLatest, put, call, all } from 'redux-saga/effects'
 import * as types from '../constant/ActionTypes'
 import { encode } from '../protocol/ProtocolUtil'
 import Request from '../protocol/Request'
-import { getLogBetween, setHost, setInit, loginSuccess, gotoHost, gotoLogin } from '../action'
+import { getLogBetween, setHost, setInit, loginSuccess, gotoHost, gotoLogin, doLogin } from '../action'
 import * as Api from './fetchData'
+import { history } from '../Root'
 
 function* websocketWatch(socket) {
   yield takeLatest(types.INTO_DIR, (action) => {
@@ -18,17 +19,29 @@ function* websocketWatch(socket) {
     const f = encode(Request.REQUEST_BETWEEN, { path: action.path, skip: action.skip, take: action.take });
     socket.send(f);
   })
-  yield takeEvery(types.UPLOAD_TOKEN, (action) => {
+  yield takeEvery(types.RESP_LOGIN_SUCCESS, (action) => {
     const f = encode(Request.TOKEN, { token: action.token });
     socket.send(f);
+    if (action.next) {
+      put(action.next());
+    }
   })
 }
 
-function* redirectWatch() {
+function* redirectWatch(store) {
   yield takeEvery(types.FIND_BY_LINE, (action) => {
     put(getLogBetween(action.path, action.lineNo - 1, action.take));
   });
   yield takeEvery(types.RESP_LOGIN_SUCCESS, () => put(gotoHost()));
+  yield takeEvery(types.GOTO_LOGIN, (action) => {
+    const needAuth = store.getState().configs.needAuth;
+    if (!needAuth) {
+      store.dispatch(doLogin('3%d8b', action.next));
+    } else {
+      history.push("/");
+    }
+  });
+  yield takeEvery(types.GOTO_HOST, () => history.push("/host"));
 }
 
 function* httpWatch() {
@@ -41,7 +54,7 @@ function* getHost() {
     const response = yield call(Api.fetchHosts);
     yield put(setHost(response));
   } catch (e) {
-    yield put(gotoLogin());
+    yield put(gotoLogin('', gotoHost));
     return;
   }
 }
@@ -52,9 +65,9 @@ function* getInit() {
 function* login(action) {
   try {
     const response = yield call(Api.login, action.password);
-    yield put(loginSuccess(response.access_token));
+    yield put(loginSuccess(response.access_token, action.next));
   } catch (e) {
-    yield put(gotoLogin('Login account or password error'));
+    yield put(gotoLogin('Login account or password error', action.next));
     return;
   }
 }
@@ -63,6 +76,6 @@ export default function* rootSage(params) {
   yield all([
     websocketWatch(params.socket),
     httpWatch(),
-    redirectWatch(),
+    redirectWatch(params.store),
   ]);
 }

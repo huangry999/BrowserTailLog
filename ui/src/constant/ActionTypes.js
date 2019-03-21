@@ -2,7 +2,6 @@ export const IGNORE = 'IGNORE';
 export const INIT = "INIT";
 export const GOTO_LOGIN = 'GOTO_LOGIN';
 export const LOGIN = 'LOGIN';
-export const UPLOAD_TOKEN = 'UPLOAD_TOKEN';
 
 // directory request
 export const INTO_DIR = 'INTO_DIR';

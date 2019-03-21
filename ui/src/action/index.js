@@ -1,6 +1,5 @@
 import * as Types from '../constant/ActionTypes'
 import { history } from '../Root'
-import { store } from '../config/configureStore'
 
 export const intoDir = (dir) => ({ type: Types.INTO_DIR, dir, })
 export const updateFileList = (files = [], dir, rollback) => ({
@@ -60,29 +59,21 @@ export const setLockBottom = (isLock) => ({ type: Types.SET_LOCK_BOTTOM, isLock 
 
 export const findByLine = (path, lineNo, take) => ({ type: Types.FIND_BY_LINE, path, lineNo, take })
 
-export const gotoLogin = (message) => {
-  const needAuth = store.getState().configs.needAuth;
-  if (!needAuth) {
-    store.dispatch(doLogin('3%d8b'));
-  } else {
-    history.push("/");
-  }
-  return { type: Types.GOTO_LOGIN, message }
+export const gotoLogin = (message, next) => {
+  return { type: Types.GOTO_LOGIN, message, next }
 }
-export const doLogin = (password) => {
+export const doLogin = (password, next) => {
   const crypto = require('crypto');
   const hash = crypto.createHash('sha256');
   hash.update("34)8e$" + password);
   const hashPw = hash.digest('hex');
-  return { type: Types.LOGIN, password: hashPw }
+  return { type: Types.LOGIN, password: hashPw, next }
 }
-export const loginSuccess = (token) => {
-  store.dispatch(uploadToken(token));
-  return { type: Types.RESP_LOGIN_SUCCESS, token }
+export const loginSuccess = (token, next) => {
+  return { type: Types.RESP_LOGIN_SUCCESS, token, next }
 }
 
 export const gotoHost = () => {
-  history.push("/host");
   return { type: Types.GOTO_HOST }
 }
 export const intoHost = (host) => {
@@ -91,5 +82,3 @@ export const intoHost = (host) => {
 }
 export const fetchHost = () => ({ type: Types.FETCH_HOST })
 export const setHost = (hosts) => ({ type: Types.RESP_FETCH_HOST, hosts })
-
-export const uploadToken = (token) => ({ type: Types.UPLOAD_TOKEN, token })

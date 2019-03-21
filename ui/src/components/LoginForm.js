@@ -4,8 +4,15 @@ import './LoginForm.css'
 
 class NormalLoginForm extends React.Component {
 
-  componentDidMount() {
-    this.props.componentDidMount();
+  state = { needAuth: true }
+
+  static getDerivedStateFromProps(props, state) {
+    if (state.needAuth !== props.needAuth) {
+      props.autoLoginIfEnableAnonymous();
+      return { needAuth: props.needAuth };
+    } else {
+      return null;
+    }
   }
 
   handleSubmit = (e) => {
@@ -31,7 +38,7 @@ class NormalLoginForm extends React.Component {
 
             ],
           })(
-            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} type="password" placeholder="Password" />
+            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} disabled={!this.props.needAuth} />} type="password" placeholder="Password" />
           )}
         </Form.Item>
         <Form.Item>

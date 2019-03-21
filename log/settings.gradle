@@ -1,3 +1,5 @@
 rootProject.name = 'log'
 include 'uiapi'
 include 'common'
+include 'fileservice'
+

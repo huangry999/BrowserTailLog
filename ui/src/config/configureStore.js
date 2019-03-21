@@ -26,4 +26,4 @@ export const store = createStore(combineReducers({
   loggerMiddleware))
 export const persistor = persistStore(store);
 export const socket = setupSocket(store.dispatch);
-sagaMiddleware.run(handleNewMessage, { socket });
+sagaMiddleware.run(handleNewMessage, { socket, store });

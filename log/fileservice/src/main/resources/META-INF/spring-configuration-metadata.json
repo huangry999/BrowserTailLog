@@ -1,0 +1,30 @@
+{
+  "properties": [
+    {
+      "name": "ui-host.host",
+      "type": "java.lang.String",
+      "defaultValue": "127.0.0.1"
+    },
+    {
+      "name": "ui-host.port",
+      "type": "java.lang.Integer"
+    },
+    {
+      "name": "file-monitor.interval-ms",
+      "type": "java.lang.Integer",
+      "defaultValue": 3000
+    },
+    {
+      "name": "log-file.path",
+      "type": "java.util.List"
+    },
+    {
+      "name": "log-file.suffix",
+      "type": "java.util.List"
+    },
+    {
+      "name": "log-file.recursive",
+      "type": "java.lang.Boolean"
+    }
+  ]
+}
