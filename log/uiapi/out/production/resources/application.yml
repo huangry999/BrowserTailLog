@@ -1,40 +1,26 @@
 spring:
   profiles:
     active: dev
-netty:
-  httpBlockMaxByte: 65535
-  ssl: false
-  port: 8081
-  address: 192.168.1.101
-  proxy:
-    port: 8082
-
-security:
-  auth:
-  expireMinutes: 30
-log:
-  path:
-    - "G:\\log"
-  suffix:
-    - ".log"
-  recursive: true
-  windowSize: 100
-  shrinkThreshold: 100
-
-init:
-  fetchTailByPercent: 75
-
-monitor:
-  intervalMs: 2000
-
-system:
-  subscribe:
-    enabledLog: false
-    logSamplingMin: 5
-  reader:
-    samplingInterval: 1000
+grpc:
+  enabled: true
+  port: 23330
+uiapi-properties:
+  netty:
+    http-block-max-byte: 65535
+    ssl: false
+    port: 8081
+    address: 192.168.1.101
+  security:
+    auth:
+    expire-minutes: 30
+  window-size: 100
+  shrink-threshold: 100
   hosts:
-    - {ip: 192.168.1.101, name: Main Host}
+    - {ip: 192.168.1.101, name: Main Host, desc: 'test machine', rpc-port: 23331}
+  subscribe:
+    log: true
+    log-sampling-second: 10
+
 ---
 spring:
   profiles: dev
@@ -43,9 +29,6 @@ server:
   address: 127.0.0.1
   servlet:
     context-path: /log
-system:
-  subscribe:
-    enabledLog: true
 ---
 spring:
   profiles:  prod

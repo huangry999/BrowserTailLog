@@ -3,6 +3,8 @@ ui-host:
   port: 23330
 file-monitor:
   interval-ms: 3000
+file-reader:
+  sampling-interval: 100
 grpc:
   enabled: true
   port: 23331
@@ -12,3 +14,8 @@ log-file:
   suffix:
     - ".log"
   recursive: true
+log-host:
+  name: 'Main Host'
+spring:
+  main:
+    web-application-type: none

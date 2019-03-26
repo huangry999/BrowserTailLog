@@ -1,4 +1,4 @@
-import { updateFileList, getNewLogContent, logContentBetween, gotoLogin } from '../action'
+import { updateFileList, getNewLogContent, logContentBetween, gotoLogin, init } from '../action'
 import { decode } from '../protocol/ProtocolUtil'
 import Respond from '../protocol/Respond'
 import RespondStatus, { valueOf } from '../constant/RespondStatus'
@@ -8,6 +8,13 @@ const setupSocket = (dispatch) => {
   socket.onerror = (event) => {
     console.error(event);
   }
+  socket.onopen = () => {
+    console.info("websocket opened");
+    dispatch(init());
+  }
+  socket.onclose = () => {
+    console.info("websocket close");
+  }
 
   socket.onmessage = (event) => {
     decode(event.data)
@@ -16,6 +23,7 @@ const setupSocket = (dispatch) => {
         if (status !== RespondStatus.SUCCESS) {
           switch (status) {
             case RespondStatus.UNAUTHORIZED:
+              console.warn("websocket respond unauthorized, goto golin");
               dispatch(gotoLogin(data.msg));
               return;
             default:

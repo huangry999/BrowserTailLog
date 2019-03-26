@@ -1,10 +1,16 @@
 package com.log.uiapi.service.bean;
 
+import com.log.fileservice.grpc.LineText;
+
 import java.util.Comparator;
 
-public class LogLineText implements Comparator<LogLineText>{
+public class LogLineText implements Comparator<LogLineText> {
     private long lineNo;
     private String text;
+
+    public LogLineText(LineText src) {
+        this(src.getLineNo(), src.getText());
+    }
 
     public LogLineText(long lineNo, String text) {
         this.lineNo = lineNo;

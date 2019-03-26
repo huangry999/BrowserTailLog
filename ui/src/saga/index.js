@@ -6,17 +6,17 @@ import { getLogBetween, setHost, setInit, loginSuccess, gotoHost, gotoLogin, doL
 import * as Api from './fetchData'
 import { history } from '../Root'
 
-function* websocketWatch(socket) {
+function* websocketWatch(socket, store) {
   yield takeLatest(types.INTO_DIR, (action) => {
-    const f = encode(Request.CHANGE_DIR, { path: action.dir });
+    const f = encode(Request.CHANGE_DIR, { hostName: store.getState().host.currentHost.name, path: action.dir });
     socket.send(f);
   })
   yield takeLatest(types.LOAD_LOG, (action) => {
-    const f = encode(Request.SUBSCRIBE, { path: action.path });
+    const f = encode(Request.SUBSCRIBE, { hostName: store.getState().host.currentHost.name, path: action.path });
     socket.send(f);
   })
   yield takeEvery(types.GET_LOG_BETWEEN, (action) => {
-    const f = encode(Request.REQUEST_BETWEEN, { path: action.path, skip: action.skip, take: action.take });
+    const f = encode(Request.REQUEST_BETWEEN, { hostName: store.getState().host.currentHost.name, path: action.path, skip: action.skip, take: action.take });
     socket.send(f);
   })
   yield takeEvery(types.RESP_LOGIN_SUCCESS, (action) => {
@@ -24,6 +24,13 @@ function* websocketWatch(socket) {
     socket.send(f);
     if (action.next) {
       put(action.next());
+    }
+  })
+  yield takeEvery(types.INIT, () => {
+    const { system } = store.getState();
+    if (system && system.token) {
+      const f = encode(Request.TOKEN, { token: system.token });
+      socket.send(f);
     }
   })
 }
@@ -42,6 +49,12 @@ function* redirectWatch(store) {
     }
   });
   yield takeEvery(types.GOTO_HOST, () => history.push("/host"));
+  yield takeEvery(types.INTO_HOST, (action) => history.push(`/${action.host.name}/log`));
+  yield takeEvery(types.OPEN_LOG, (action) => {
+    const hostName = store.getState().host.currentHost.name;
+    //window.open(`/${hostName}/log/${action.key}`);
+    history.push(`/${hostName}/log/${action.key}`)
+  });
 }
 
 function* httpWatch() {
@@ -74,7 +87,7 @@ function* login(action) {
 
 export default function* rootSage(params) {
   yield all([
-    websocketWatch(params.socket),
+    websocketWatch(params.socket, params.store),
     httpWatch(),
     redirectWatch(params.store),
   ]);

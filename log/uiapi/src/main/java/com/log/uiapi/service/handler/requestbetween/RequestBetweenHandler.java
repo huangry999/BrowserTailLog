@@ -8,6 +8,8 @@ import com.log.uiapi.service.bean.LogLineText;
 import com.log.uiapi.service.handler.BasicAuthRequestHandler;
 import com.log.uiapi.service.handler.PathRequest;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import java.util.List;
 @Component
 public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenRequest> {
     private final static Logger logger = LoggerFactory.getLogger(RequestBetweenHandler.class);
-    @Value("${log.windowSize}")
+    @Value("${uiapi-properties.window-size}")
     private int windowSize;
     private final FileService fileService;
 
@@ -37,7 +39,7 @@ public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenReques
             return;
         }
         long skip = request.getSkip();
-        int take = request.getTake() == null ? windowSize : request.getTake();
+        long take = request.getTake() == null ? windowSize : request.getTake();
         if (skip < 0 || take < 0) {
             throw new IllegalArgumentException(String.format("Take %s or Skip %s value is negative", take, skip));
         }
@@ -46,7 +48,7 @@ public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenReques
                 log.getAbsolutePath(),
                 skip,
                 take);
-        List<LogLineText> contents = fileService.read(log, skip, take);
+        List<LogLineText> contents = fileService.read(request.getHostName(), request.getPath(), skip, take);
         LogP respond = LogPFactory.defaultInstance0()
                 .addData("data", contents)
                 .addData("path", request.getPath())
@@ -67,23 +69,10 @@ public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenReques
  * Due to log showed by line number desc, the "from" parameter means the last line number of contents to take,
  * and the "take" parameter means the log row (include "from") count to take upside "from".
  */
+@Setter
+@Getter
 class BetweenRequest extends PathRequest {
     private long skip;
-    private Integer take;
-
-    public long getSkip() {
-        return skip;
-    }
-
-    public void setSkip(long skip) {
-        this.skip = skip;
-    }
-
-    public Integer getTake() {
-        return take;
-    }
-
-    public void setTake(Integer take) {
-        this.take = take;
-    }
+    private Long take;
+    private String hostName;
 }

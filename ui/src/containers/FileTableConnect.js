@@ -1,19 +1,26 @@
-import { intoDir, openLog } from '../action'
+import { intoDir, openLog, gotoHost } from '../action'
 import FileType, { valueOf } from '../constant/FileType'
 import FileTable from '../components/FileTable'
 import { connect } from 'react-redux'
 
 const mapStateToProps = ({ files, dir }) => {
   const data = Object.assign([], files);
-  if (dir.current) {
-    const parent = {
-      name: '../',
-      type: FileType.PARENT.code,
-      path: dir.rollback,
-      key: 'parentDir',
-    };
-    data.unshift(parent);
+  const { rollback } = dir;
+  const parent = {
+    name: '../',
+    type: FileType.PARENT.code,
+    path: rollback.rollBackPath,
+    key: 'parentDir',
+  };
+  if (rollback.inHostPath) {
+    parent.key = 'toHost';
+    parent.name = 'Hosts List';
+    parent.toHost = true;
   }
+  if (rollback.inRootPath) {
+    parent.key = 'toRoot';
+  }
+  data.unshift(parent);
   return { dir, data };
 }
 
@@ -21,16 +28,20 @@ const mapDispatchToProps = (dispatch) => {
   return {
     dispatch,
     onClick: (record) => {
-      switch (valueOf(record.type)) {
-        case FileType.LOG:
-          dispatch(openLog(record.key));
-          break;
-        case FileType.DIRECTORY:
-        case FileType.PARENT:
-          dispatch(intoDir(record.path));
-          break;
-        default:
-          throw Error("Not support file tpye: " + record.type);
+      if (record.toHost) {
+        dispatch(gotoHost());
+      } else {
+        switch (valueOf(record.type)) {
+          case FileType.LOG:
+            dispatch(openLog(record.key));
+            break;
+          case FileType.DIRECTORY:
+          case FileType.PARENT:
+            dispatch(intoDir(record.path));
+            break;
+          default:
+            throw Error("Not support file tpye: " + record.type);
+        }
       }
     }
   }

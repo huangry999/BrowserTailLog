@@ -11,15 +11,27 @@ export function files(state = [], action) {
   switch (action.type) {
     case Types.RESP_LIST_FILE:
       return action.files;
+    case Types.INTO_HOST:
+      return [];
     default:
       return state;
   }
 }
 
-export function dir(state = {}, action) {
+const defDirState = {
+  current: undefined,
+  rollback: {
+    inHostPath: true,
+    inRootPath: false,
+    rollBackPath: undefined
+  }
+};
+export function dir(state = defDirState, action) {
   switch (action.type) {
     case Types.RESP_LIST_FILE:
       return { current: action.dir, rollback: action.rollback }
+    case Types.INTO_HOST:
+      return defDirState;
     default:
       return state;
   }
@@ -165,8 +177,6 @@ export function tipInfo(state = {}, action) {
 
 export function system(state = {}, action) {
   switch (action.type) {
-    case Types.INIT:
-      return Object.assign({ sessionId: action.sessionId }, state);
     case Types.RESP_LOGIN_SUCCESS:
       return Object.assign({}, state, { token: action.token });
     default:
@@ -192,11 +202,9 @@ export function openLogMap(state = {}, action) {
 export function host(state = { hosts: [], currentHost: undefined }, action) {
   switch (action.type) {
     case Types.RESP_FETCH_HOST:
-      state.hosts = action.hosts;
-      return state;
+      return Object.assign({}, state, { hosts: action.hosts });
     case Types.INTO_HOST:
-      state.currentHost = action.host;
-      return state;
+      return Object.assign({}, state, { currentHost: action.host });
     default:
       return state;
   }

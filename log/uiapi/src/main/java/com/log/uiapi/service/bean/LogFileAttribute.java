@@ -1,12 +1,14 @@
 package com.log.uiapi.service.bean;
 
-import com.log.common.constant.CodedConstant;
-import com.log.uiapi.constant.FileType;
+import com.log.fileservice.grpc.FileContext;
+import com.log.fileservice.grpc.FileType;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.io.File;
-import java.util.Date;
-
+@Getter
+@Setter
 public class LogFileAttribute implements Comparable<LogFileAttribute> {
     private String path;
     private String modifyUtcTime;
@@ -15,66 +17,15 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
     private Long size;
     private String key;
 
-    /**
-     * Parse by a file
-     *
-     * @param file the file
-     * @return file attribute
-     */
-    public static LogFileAttribute valueOf(File file) {
-        LogFileAttribute result = new LogFileAttribute();
-        if (!file.exists()) {
-            return result;
+    public LogFileAttribute(FileContext src) {
+        this.type = src.getTypeValue();
+        this.path = src.getFilePath();
+        this.modifyUtcTime = DateFormatUtils.format(src.getModifyTime(), "yyyy-MM-dd'T'HH:mm'Z'");
+        if (src.getType() == FileType.FILE) {
+            this.size = src.getSize();
         }
-        result.type = (file.isDirectory() ? FileType.DIRECTORY : FileType.LOG_FILE).getCode();
-        result.path = file.toPath().toString();
-        result.name = file.getName();
-        result.key = file.getAbsolutePath().hashCode() + "";
-        Date md = new Date(file.lastModified());
-        result.modifyUtcTime = DateFormatUtils.format(md, "yyyy-MM-dd'T'HH:mm'Z'");
-        if (!file.isDirectory()) {
-            result.size = file.length();
-        }
-        return result;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * Get the path of file, exclude file name
-     *
-     * @return path
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Get the file modify time in utc.
-     *
-     * @return time
-     */
-    public String getModifyUtcTime() {
-        return modifyUtcTime;
-    }
-
-    /**
-     * Get the file name
-     *
-     * @return file name
-     */
-    public String getName() {
-        return name;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public String getKey() {
-        return key;
+        this.name = FilenameUtils.getName(src.getFilePath());
+        this.key = src.getFilePath().hashCode() + "";
     }
 
     @Override
@@ -82,6 +33,6 @@ public class LogFileAttribute implements Comparable<LogFileAttribute> {
         if (this.type == o.type) {
             return this.name.compareTo(o.name);
         }
-        return CodedConstant.valueOf(this.type, FileType.values(), null) == FileType.DIRECTORY ? -1 : 1;
+        return this.type == FileType.DIRECTORY.getNumber() ? -1 : 1;
     }
 }

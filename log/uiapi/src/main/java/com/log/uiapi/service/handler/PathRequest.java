@@ -1,13 +1,11 @@
 package com.log.uiapi.service.handler;
 
-public class PathRequest implements RequestParam{
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class PathRequest implements RequestParam {
     protected String path;
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
+    protected String hostName;
 }

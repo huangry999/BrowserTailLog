@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -85,27 +84,20 @@ public class SubscriberManager implements ApplicationContextAware {
         subscribers.add(subscriber);
     }
 
-    /**
-     * get subscriber by event and log
-     *
-     * @param file the file
-     * @return subscribers
-     */
-    public List<Subscriber> getSubscribers(File file) {
+    public List<Subscriber> getSubscribers(String filePath, String hostName) {
         List<Subscriber> r = subscribers.stream()
-                .filter(s -> s.getFile().equals(file))
+                .filter(s -> s.getHostName().equals(hostName))
+                .filter(s -> s.getFile().getPath().equals(filePath))
                 .collect(Collectors.toList());
         return r;
     }
 
     @Override
-    @NonNull
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        Boolean enabledLog = applicationContext.getEnvironment().getProperty("system.subscribe.enabledLog", Boolean.class);
-        Integer logSamplingMin = applicationContext.getEnvironment().getProperty("system.subscribe.logSamplingMin", Integer.class);
+        Boolean enabledLog = applicationContext.getEnvironment().getProperty("uiapi-properties.subscribe.log", Boolean.class, false);
+        Integer samplingSecond = applicationContext.getEnvironment().getProperty("uiapi-properties.subscribe.log-sampling-second", Integer.class, 10);
         if (enabledLog == Boolean.TRUE) {
             Timer timer = new Timer(true);
-            assert Objects.nonNull(logSamplingMin);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -122,7 +114,7 @@ public class SubscriberManager implements ApplicationContextAware {
                     }
                     logger.info(sb.toString());
                 }
-            }, 0, logSamplingMin * 1000);
+            }, 0, samplingSecond * 1000);
         }
     }
 }

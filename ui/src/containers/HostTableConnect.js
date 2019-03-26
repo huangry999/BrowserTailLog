@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 const mapStateToProps = ({ host }) => {
   const hosts = Object.assign([], host.hosts);
   hosts.forEach(h => {
-    h.key = h.ip;
+    h.key = h.name;
   });
   return { hosts };
 }
@@ -16,7 +16,7 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(fetchHost());
     },
     onClick: (record) => {
-      dispatch(intoHost(record.ip));
+      dispatch(intoHost(record));
     }
   }
 }

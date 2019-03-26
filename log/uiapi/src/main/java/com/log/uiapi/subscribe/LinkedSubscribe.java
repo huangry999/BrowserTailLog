@@ -11,8 +11,8 @@ public final class LinkedSubscribe extends Subscriber {
     private long readIndex;
     private final Lock lock = new ReentrantLock();
 
-    public LinkedSubscribe(File file, ChannelHandlerContext context) {
-        super(file);
+    public LinkedSubscribe(String hostName, File file, ChannelHandlerContext context) {
+        super(file, hostName);
         this.context = context;
     }
 

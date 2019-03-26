@@ -9,12 +9,13 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ChannelHandler.Sharable
+@Slf4j
 public class ExceptionHandler extends ChannelInboundHandlerAdapter {
-    private final static Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -29,7 +30,7 @@ public class ExceptionHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
         }
-        logger.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);
+        log.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);
         CloseWebSocketFrame response = new CloseWebSocketFrame(RespondStatus.INTERNAL_SERVER_ERROR.getCode(), cause.getMessage());
         ctx.channel().writeAndFlush(response);
     }

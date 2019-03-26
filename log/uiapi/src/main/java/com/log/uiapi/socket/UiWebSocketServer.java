@@ -17,23 +17,21 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.InetSocketAddress;
 
 @Service
+@Slf4j
 public class UiWebSocketServer {
-
-    private static final Logger logger = LoggerFactory.getLogger(UiWebSocketServer.class);
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private Channel channel;
-    @Value("${netty.ssl:false}")
+    @Value("${uiapi-properties.netty.ssl:false}")
     private boolean enableSsl;
-    @Value("${netty.httpBlockMaxByte:65535}")
+    @Value("${uiapi-properties.netty.http-block-max-byte:65535}")
     private int httpBlockMaxByte;
 
     /**
@@ -57,7 +55,7 @@ public class UiWebSocketServer {
      * shutdown listening
      */
     public void destroy() {
-        logger.info("Shutdown log service");
+        log.info("Shutdown log service");
         if (channel != null) {
             channel.close();
         }

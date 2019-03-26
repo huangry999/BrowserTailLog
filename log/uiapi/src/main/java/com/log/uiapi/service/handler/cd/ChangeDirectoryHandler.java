@@ -3,14 +3,14 @@ package com.log.uiapi.service.handler.cd;
 import com.log.uiapi.protocol.constants.Respond;
 import com.log.uiapi.protocol.logp.LogP;
 import com.log.uiapi.protocol.logp.LogPFactory;
-import com.log.uiapi.service.LogFileService;
+import com.log.uiapi.service.FileService;
 import com.log.uiapi.service.bean.LogFileAttribute;
+import com.log.uiapi.service.bean.RollbackAttribute;
 import com.log.uiapi.service.handler.BasicAuthRequestHandler;
 import com.log.uiapi.service.handler.PathRequest;
 import com.log.uiapi.subscribe.LinkedSubscribe;
 import com.log.uiapi.subscribe.Subscriber;
 import com.log.uiapi.subscribe.SubscriberManager;
-import com.log.uiapi.util.FileUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.logging.log4j.util.Strings;
@@ -20,8 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,14 +29,14 @@ import java.util.List;
  */
 @Component
 public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest> {
-    private final LogFileService logFileService;
+    private final FileService fileService;
     private final static Logger logger = LoggerFactory.getLogger(ChangeDirectoryHandler.class);
     private final SubscriberManager subscriberManager;
 
     @Autowired
-    public ChangeDirectoryHandler(LogFileService logFileService, SubscriberManager subscriberManager) {
+    public ChangeDirectoryHandler(FileService fileService, SubscriberManager subscriberManager) {
         super(PathRequest.class);
-        this.logFileService = logFileService;
+        this.fileService = fileService;
         this.subscriberManager = subscriberManager;
     }
 
@@ -48,38 +46,40 @@ public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest>
         //if path is null. return the root
         List<LogFileAttribute> result;
         if (Strings.isBlank(request.getPath())) {
-            result = logFileService.listRoot();
+            result = fileService.list(request.getHostName(), null);
         } else {
-            if (!FileUtils.checkValid(request.getPath())) {
-                throw new IllegalAccessException(request.getPath() + " is out of valid access range");
-            }
-            result = this.logFileService.listLogFiles(request.getPath(), false);
+            result = this.fileService.list(request.getHostName(), request.getPath());
             subscriberManager.remove(ctx, DirectoryFileFilter.INSTANCE);
-            Subscriber subscriber = new LinkedSubscribe(new File(request.getPath()), ctx);
+            Subscriber subscriber = new LinkedSubscribe(request.getHostName(), new File(request.getPath()), ctx);
             subscriber.setDeleteHandler(s -> {
-                send(logFileService.listRoot(), ctx, null);
+                send(fileService.list(request.getHostName(), null), ctx, request);
                 logger.debug("{} delete, send empty dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
             });
             subscriber.setModifyHandler(s -> {
                 logger.debug("{} modify, send latest dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
-                List<LogFileAttribute> data = this.logFileService.listLogFiles(request.getPath(), false);
-                send(data, ctx, request.getPath());
+                List<LogFileAttribute> data = this.fileService.list(request.getHostName(), request.getPath());
+                send(data, ctx, request);
             });
             subscriberManager.subscribe(subscriber);
         }
-        send(result, ctx, request.getPath());
+        send(result, ctx, request);
     }
 
-    private void send(List<LogFileAttribute> data, ChannelHandlerContext ctx, String requestPath) {
+    private void send(List<LogFileAttribute> data, ChannelHandlerContext ctx, PathRequest request) {
         Collections.sort(data);
-        final Path parent = Strings.isBlank(requestPath) ? null : Paths.get(requestPath).getParent();
+        RollbackAttribute rollbackAttribute;
+        if (Strings.isBlank(request.getPath())) {
+            rollbackAttribute = new RollbackAttribute();
+            rollbackAttribute.setInHostPath(true);
+        } else {
+            rollbackAttribute = this.fileService.directoryContext(request.getHostName(), request.getPath());
+        }
+
         LogPFactory respond = LogPFactory.defaultInstance0()
                 .setRespond(Respond.LIST_FILE)
-                .addData("dir", requestPath)
-                .addData("files", data);
-        if (parent != null && FileUtils.checkValid(parent.toString())) {
-            respond.addData("rollback", parent.toString());
-        }
+                .addData("dir", request.getPath())
+                .addData("files", data)
+                .addData("rollback", rollbackAttribute);
         ctx.writeAndFlush(respond.create());
     }
 }

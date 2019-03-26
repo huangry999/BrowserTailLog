@@ -6,9 +6,9 @@ const columns = [{
   dataIndex: 'name',
   key: 'name',
 }, {
-  title: 'InternalAddress',
-  dataIndex: 'ip',
-  key: 'ip',
+  title: 'Description',
+  dataIndex: 'desc',
+  key: 'desc',
 }];
 export default class HostTable extends React.Component {
 

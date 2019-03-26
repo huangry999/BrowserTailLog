@@ -5,6 +5,8 @@ import com.log.uiapi.service.handler.BasicRequestHandler;
 import com.log.uiapi.service.handler.HandlerConstants;
 import com.log.uiapi.service.handler.RequestParam;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,16 +23,11 @@ public class TokenHandler extends BasicRequestHandler<TokenRequest> {
         ctx.channel().attr(HandlerConstants.ATTR_TOKEN).set(request.getToken());
     }
 }
+
+@Getter
+@Setter
 class TokenRequest implements RequestParam {
     private String token;
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 }
 
 

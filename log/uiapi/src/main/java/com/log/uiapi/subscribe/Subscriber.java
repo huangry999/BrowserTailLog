@@ -4,32 +4,48 @@ import java.io.File;
 
 public class Subscriber {
     protected final File file;
+    protected final String hostName;
     protected SubscribeEventHandler modifyHandler;
     protected SubscribeEventHandler deleteHandler;
     protected SubscribeEventHandler createHandler;
 
-    public Subscriber(File file) {
+    public Subscriber(File file, String hostName) {
         this.file = file;
+        this.hostName = hostName;
     }
 
-    public SubscribeEventHandler getModifyHandler() {
-        return modifyHandler;
+    @Override
+    public String toString() {
+        return "Subscriber{" +
+                "file=" + file +
+                ", hostName='" + hostName + '\'' +
+                '}';
+    }
+
+    public void notifyDelete() {
+        if (deleteHandler != null) {
+            deleteHandler.handle(this);
+        }
+    }
+
+    public void notifyCreate() {
+        if (createHandler != null) {
+            createHandler.handle(this);
+        }
+    }
+
+    public void notifyModify() {
+        if (modifyHandler != null) {
+            modifyHandler.handle(this);
+        }
     }
 
     public void setModifyHandler(SubscribeEventHandler modifyHandler) {
         this.modifyHandler = modifyHandler;
     }
 
-    public SubscribeEventHandler getDeleteHandler() {
-        return deleteHandler;
-    }
-
     public void setDeleteHandler(SubscribeEventHandler deleteHandler) {
         this.deleteHandler = deleteHandler;
-    }
-
-    public SubscribeEventHandler getCreateHandler() {
-        return createHandler;
     }
 
     public void setCreateHandler(SubscribeEventHandler createHandler) {
@@ -40,11 +56,7 @@ public class Subscriber {
         return file;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Subscriber{");
-        sb.append("file=").append(file.getAbsoluteFile());
-        sb.append('}');
-        return sb.toString();
+    public String getHostName() {
+        return hostName;
     }
 }

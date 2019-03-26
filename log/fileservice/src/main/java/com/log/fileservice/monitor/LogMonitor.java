@@ -16,6 +16,7 @@ import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -29,6 +30,8 @@ public class LogMonitor {
     private final ExecutorService executorService;
     private final Monitor monitor;
     private final ManagedChannel managedChannel;
+    @Value("${log-host.name}")
+    private String hostName;
 
     /**
      * release resources
@@ -62,6 +65,7 @@ public class LogMonitor {
                         .setFilePath(directory.getAbsolutePath())
                         .setEventType(EventType.CREATE)
                         .setFileType(FileType.DIRECTORY)
+                        .setFromHost(hostName)
                         .build();
                 futureStub.notify(notification);
             }
@@ -73,6 +77,7 @@ public class LogMonitor {
                         .setFilePath(directory.getAbsolutePath())
                         .setEventType(EventType.MODIFY)
                         .setFileType(FileType.DIRECTORY)
+                        .setFromHost(hostName)
                         .build();
                 futureStub.notify(notification);
             }
@@ -84,6 +89,7 @@ public class LogMonitor {
                         .setFilePath(directory.getAbsolutePath())
                         .setEventType(EventType.DELETE)
                         .setFileType(FileType.DIRECTORY)
+                        .setFromHost(hostName)
                         .build();
                 futureStub.notify(notification);
             }
@@ -91,11 +97,11 @@ public class LogMonitor {
             @Override
             public void onFileCreate(File file) {
                 log.debug("file create event: {}", file.getAbsolutePath());
-                logFileService.removeFileContext(file);
                 FileEventNotification notification = FileEventNotification.newBuilder()
                         .setFilePath(file.getAbsolutePath())
                         .setEventType(EventType.CREATE)
                         .setFileType(FileType.FILE)
+                        .setFromHost(hostName)
                         .build();
                 futureStub.notify(notification);
             }
@@ -103,10 +109,13 @@ public class LogMonitor {
             @Override
             public void onFileModify(File file) {
                 log.debug("file modify event: {}", file.getAbsolutePath());
+                boolean refresh = logFileService.updateFileContext(file);
                 FileEventNotification notification = FileEventNotification.newBuilder()
                         .setFilePath(file.getAbsolutePath())
                         .setEventType(EventType.MODIFY)
                         .setFileType(FileType.FILE)
+                        .setFromHost(hostName)
+                        .setRefresh(refresh)
                         .build();
                 futureStub.notify(notification);
             }
@@ -119,6 +128,7 @@ public class LogMonitor {
                         .setFilePath(file.getAbsolutePath())
                         .setEventType(EventType.DELETE)
                         .setFileType(FileType.FILE)
+                        .setFromHost(hostName)
                         .build();
                 futureStub.notify(notification);
             }

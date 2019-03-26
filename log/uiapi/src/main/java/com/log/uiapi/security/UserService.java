@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private static final String DEFAULT_PASSWORD = "3%d8b";
-    @Value("${security.auth}")
+    @Value("${uiapi-properties.security.auth:''}")
     private String systemPassword;
     private final static String SALT = "34)8e$";
 

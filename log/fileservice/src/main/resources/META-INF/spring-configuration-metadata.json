@@ -25,6 +25,15 @@
     {
       "name": "log-file.recursive",
       "type": "java.lang.Boolean"
+    },
+    {
+      "name": "file-reader.sampling-interval",
+      "type": "java.lang.Integer",
+      "defaultValue": 100
+    },
+    {
+      "name": "log-host.name",
+      "type": "java.lang.String"
     }
   ]
 }

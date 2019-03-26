@@ -13,9 +13,9 @@ import java.net.InetSocketAddress;
 public class UiWebSocketApplication implements CommandLineRunner {
 
     private final UiWebSocketServer uiWebSocketServer;
-    @Value("${netty.address}")
+    @Value("${uiapi-properties.netty.address}")
     private String bindAddress;
-    @Value("${netty.port}")
+    @Value("${uiapi-properties.netty.port}")
     private int bindPort;
 
     @Autowired

@@ -13,11 +13,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("index")
 public class IndexController {
-    @Value("${log.windowSize}")
+    @Value("${uiapi-properties.window-size}")
     private int windowSize;
-    @Value("${log.shrinkThreshold}")
+    @Value("${uiapi-properties.shrink-threshold}")
     private Integer shrinkThreshold;
-    @Value("${security.auth:''}")
+    @Value("${uiapi-properties.security.auth:''}")
     private String systemPassword;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

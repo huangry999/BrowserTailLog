@@ -1,16 +1,16 @@
 import PropTypes from 'prop-types';
 
 const FileType = {
+  LOG: {
+    code: 0,
+    iconType: 'file',
+  },
   DIRECTORY: {
     code: 1,
     iconType: 'folder',
   },
-  LOG: {
-    code: 2,
-    iconType: 'file',
-  },
   PARENT: {
-    code: 3,
+    code: 2,
     iconType: 'rollback',
   }
 }

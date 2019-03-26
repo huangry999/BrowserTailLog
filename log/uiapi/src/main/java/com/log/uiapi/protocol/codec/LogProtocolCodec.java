@@ -120,7 +120,7 @@ public class LogProtocolCodec extends MessageToMessageCodec<BinaryWebSocketFrame
         logP.setHead(head);
         String body = in.readCharSequence(head.getSize().getValue() - FrameHead.SIZE, CHARSET).toString();
         logP.setBody(body);
-        logger.debug("decode: {} \n head frame:{}\n body:{}", logP, BytePrinter.toString1(headByte), body);
+        logger.debug("\n head frame:{}\n body:{}", BytePrinter.toString1(headByte), body);
         out.add(logP);
     }
 

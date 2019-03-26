@@ -1,5 +1,5 @@
 import * as Types from '../constant/ActionTypes'
-import { history } from '../Root'
+import { initWebsite } from '../index'
 
 export const intoDir = (dir) => ({ type: Types.INTO_DIR, dir, })
 export const updateFileList = (files = [], dir, rollback) => ({
@@ -13,12 +13,11 @@ export const init = () => {
   return { type: Types.INIT }
 }
 export const setInit = (configs) => {
+  initWebsite();
   return { type: Types.RESP_INIT, configs }
 }
 
 export const openLog = (key) => {
-  window.open('/#/log/' + key);
-  //history.push('/log/' + key);
   return { type: Types.OPEN_LOG, key }
 }
 export const loadLog = path => ({ type: Types.LOAD_LOG, path });
@@ -77,7 +76,6 @@ export const gotoHost = () => {
   return { type: Types.GOTO_HOST }
 }
 export const intoHost = (host) => {
-  history.push("/log");
   return { type: Types.INTO_HOST, host }
 }
 export const fetchHost = () => ({ type: Types.FETCH_HOST })
