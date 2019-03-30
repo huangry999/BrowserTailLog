@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("host")
+@RequestMapping("api/host")
 @Slf4j
 public class HostController {
 

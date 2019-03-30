@@ -1,8 +1,7 @@
 package com.log.fileservice.reader;
 
-import com.log.common.spring.SpringUtils;
+import com.log.fileservice.spring.SpringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 
 import java.io.*;
 import java.util.LinkedHashMap;

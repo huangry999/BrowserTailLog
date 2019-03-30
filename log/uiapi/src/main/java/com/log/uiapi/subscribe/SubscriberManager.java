@@ -1,6 +1,7 @@
 package com.log.uiapi.subscribe;
 
 import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -15,8 +16,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class SubscriberManager implements ApplicationContextAware {
-    private static final Logger logger = LoggerFactory.getLogger(SubscriberManager.class);
     private List<Subscriber> subscribers = new CopyOnWriteArrayList<>();
 
     /**
@@ -112,7 +113,7 @@ public class SubscriberManager implements ApplicationContextAware {
                     for (Subscriber subscriber : copy) {
                         sb.append(subscriber).append('\n');
                     }
-                    logger.info(sb.toString());
+                    log.info(sb.toString());
                 }
             }, 0, samplingSecond * 1000);
         }

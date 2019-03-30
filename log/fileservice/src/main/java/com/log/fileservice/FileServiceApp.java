@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.log.fileservice", "com.log.common"})
 public class FileServiceApp implements CommandLineRunner {
     private final LogMonitor logMonitor;
 

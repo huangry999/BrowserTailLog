@@ -1,0 +1,15 @@
+server:
+  port: 8080 # tomcat 端口
+  address: 127.0.0.1 # tomcat 监听地址
+grpc:
+  port: 23330 # grpc 端口，默认23330
+uiapi-properties:
+  netty:
+    port: 8081 # websocket服务端口，默认8081
+    address: 127.0.0.1 # websocket服务监听地址，默认127.0.0.1
+  security:
+    auth: # 需要验证密码，可选，默认不需要
+    expire-minutes: 30 # session过期时间，默认30分钟
+  # file service 服务，name需要与host配置文件相同
+  hosts:
+    - {ip: 127.0.0.1, name: Demo, desc: 'Demo Host', rpc-port: 23331}

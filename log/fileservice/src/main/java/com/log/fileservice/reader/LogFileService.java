@@ -15,9 +15,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,10 +39,11 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
 
     @Override
     public void read(ReadRequest request, StreamObserver<ReadRespond> responseObserver) {
-        if (checkPathInvalid(request.getFilePath(), responseObserver)) {
+        String path = this.convertToRealPath(request.getFilePath());
+        if (checkPathInvalid(path, responseObserver)) {
             return;
         }
-        File file = new File(request.getFilePath());
+        File file = new File(path);
         long skip = request.getSkip();
         try {
             final List<String> raw = this.read0(file, skip, request.getTake());
@@ -60,10 +63,11 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
 
     @Override
     public void totalLineNumber(LineNumberRequest request, StreamObserver<LineNumberRespond> responseObserver) {
-        if (checkPathInvalid(request.getFilePath(), responseObserver)) {
+        String path = this.convertToRealPath(request.getFilePath());
+        if (checkPathInvalid(path, responseObserver)) {
             return;
         }
-        File file = new File(request.getFilePath());
+        File file = new File(path);
         LogFileContext context = this.getContext(file);
         LineNumberRespond respond;
         if (context != null) {
@@ -77,35 +81,38 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
 
     @Override
     public void listFile(ListRequest request, StreamObserver<ListRespond> responseObserver) {
-        String dirPath = request.getDirectoryPath();
         List<FileContext> files = new ArrayList<>();
-        if (Strings.isBlank(dirPath)) {
+        if (Strings.isBlank(request.getDirectoryPath())) {
             files = logFileProperties.getPath().stream()
+                    .map(com.log.fileservice.config.bean.Path::getPath)
                     .map(File::new)
                     .map(f -> FileContext.newBuilder()
-                            .setFilePath(f.getPath())
+                            .setFilePath(this.convertToAliasPath(f.getPath()))
                             .setType(FileType.DIRECTORY)
                             .setModifyTime(f.exists() ? f.lastModified() : 0)
                             .build()
                     )
+                    .filter(c -> c.getFilePath() != null)
                     .collect(Collectors.toList());
         } else {
-            if (checkPathInvalid(request.getDirectoryPath(), responseObserver)) {
+            String dirPath = this.convertToRealPath(request.getDirectoryPath());
+            if (checkPathInvalid(dirPath, responseObserver)) {
                 return;
             }
-            File dir = new File(request.getDirectoryPath());
+            File dir = new File(dirPath);
             try {
                 files = Files.list(dir.toPath())
                         .map(Path::toFile)
                         .map(f -> FileContext.newBuilder()
-                                .setFilePath(f.getPath())
+                                .setFilePath(this.convertToAliasPath(f.getPath()))
                                 .setModifyTime(f.lastModified())
                                 .setType(f.isFile() ? FileType.FILE : FileType.DIRECTORY)
                                 .setSize(f.length())
                                 .build())
+                        .filter(c -> c.getFilePath() != null)
                         .collect(Collectors.toList());
             } catch (IOException e) {
-                log.error("list dir {} files error", request.getDirectoryPath(), e);
+                log.error("list dir {} files error", dirPath, e);
             }
         }
         responseObserver.onNext(ListRespond.newBuilder().addAllFiles(files).build());
@@ -114,12 +121,13 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
 
     @Override
     public void directoryContext(DirectoryContextRequest request, StreamObserver<DirectoryContextRespond> responseObserver) {
-        String path = request.getDirectoryPath();
+        String path = this.convertToRealPath(request.getDirectoryPath());
         if (checkPathInvalid(path, responseObserver)) {
             return;
         }
         DirectoryContextRespond.Builder builder = DirectoryContextRespond.newBuilder();
-        if (logFileProperties.getPath().contains(path)) {
+        boolean root = logFileProperties.getPath().stream().anyMatch(p -> p.getPath().equals(path));
+        if (root) {
             builder.setLevel(DirectoryLevel.ROOT);
         } else if (Strings.isBlank(path)) {
             builder.setLevel(DirectoryLevel.HOST);
@@ -127,13 +135,34 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
             File dir = new File(path);
             if (dir.exists()) {
                 builder.setLevel(DirectoryLevel.NORMAL);
-                builder.setRollback(dir.getParent());
+                builder.setRollback(this.convertToAliasPath(dir.getParent()));
             } else {
                 builder.setLevel(DirectoryLevel.ROOT);
             }
         }
         responseObserver.onNext(builder.build());
         responseObserver.onCompleted();
+    }
+
+    public String convertToAliasPath(String realPath) {
+        com.log.fileservice.config.bean.Path root = logFileProperties.getPath().stream()
+                .filter(p -> realPath.startsWith(p.getPath()))
+                .findFirst()
+                .orElse(null);
+        if (root == null) {
+            return null;
+        }
+        return realPath.replace(root.getPath(), root.getAlias());
+    }
+
+    private String convertToRealPath(String path) {
+        String alias = path.split("[\\\\/]")[0];
+        String rootPath = logFileProperties.getPath()
+                .stream()
+                .filter(p -> p.getAlias().equals(alias))
+                .findFirst()
+                .orElseThrow(() -> new MissingResourceException("Unknown path alias", "RootPath", path)).getPath();
+        return Paths.get(rootPath, path.substring(alias.length())).toString();
     }
 
     private boolean checkPathInvalid(String path, StreamObserver observer) {
@@ -145,9 +174,9 @@ public final class LogFileService extends FileServiceGrpc.FileServiceImplBase {
     }
 
     private boolean checkPathInvalid(String path) {
-        for (String root : logFileProperties.getPath()) {
+        for (com.log.fileservice.config.bean.Path root : logFileProperties.getPath()) {
             try {
-                if (FilenameUtils.equals(root, path) || FilenameUtils.directoryContains(root, path)) {
+                if (FilenameUtils.equals(root.getPath(), path) || FilenameUtils.directoryContains(root.getPath(), path)) {
                     return false;
                 }
             } catch (IOException e) {

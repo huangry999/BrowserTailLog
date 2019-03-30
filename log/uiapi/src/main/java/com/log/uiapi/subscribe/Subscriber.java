@@ -24,19 +24,19 @@ public class Subscriber {
 
     public void notifyDelete() {
         if (deleteHandler != null) {
-            deleteHandler.handle(this);
+            deleteHandler.handle();
         }
     }
 
     public void notifyCreate() {
         if (createHandler != null) {
-            createHandler.handle(this);
+            createHandler.handle();
         }
     }
 
     public void notifyModify() {
         if (modifyHandler != null) {
-            modifyHandler.handle(this);
+            modifyHandler.handle();
         }
     }
 

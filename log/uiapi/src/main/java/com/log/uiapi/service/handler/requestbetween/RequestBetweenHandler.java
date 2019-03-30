@@ -34,10 +34,6 @@ public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenReques
 
     @Override
     protected void handle(ChannelHandlerContext ctx, LogP msg, BetweenRequest request) throws Exception {
-        File log = new File(request.getPath());
-        if (!log.exists()) {
-            return;
-        }
         long skip = request.getSkip();
         long take = request.getTake() == null ? windowSize : request.getTake();
         if (skip < 0 || take < 0) {
@@ -45,7 +41,7 @@ public class RequestBetweenHandler extends BasicAuthRequestHandler<BetweenReques
         }
         logger.debug("{} request log {} skip {} take {}",
                 ctx.channel().remoteAddress(),
-                log.getAbsolutePath(),
+                request.getPath(),
                 skip,
                 take);
         List<LogLineText> contents = fileService.read(request.getHostName(), request.getPath(), skip, take);

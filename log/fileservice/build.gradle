@@ -1,3 +1,5 @@
+apply plugin: 'com.google.protobuf'
+
 sourceSets {
     main {
         java {
@@ -16,5 +18,4 @@ protobuf {
         all()*.plugins { grpc {} }
     }
 }
-startScripts.enabled = false
 mainClassName="com.log.fileservice.FileServiceApp"

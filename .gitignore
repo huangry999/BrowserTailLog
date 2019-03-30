@@ -29,7 +29,6 @@ build
 .gradle
 
 #node
-/ui/package-lock.json
-/ui/node_modules
-/ui/.vscode
-/ui/build
+package-lock.json
+node_modules
+.vscode

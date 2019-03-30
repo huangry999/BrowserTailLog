@@ -1,21 +1,25 @@
 ui-host:
   host: 127.0.0.1
-  port: 23330
+  port: 10902
 file-monitor:
   interval-ms: 3000
 file-reader:
   sampling-interval: 100
 grpc:
   enabled: true
-  port: 23331
+  port: 10903
 log-file:
   path:
-    - "G:\\log"
-  suffix:
-    - ".log"
+    - { path: "G:\\log", alias: 'test' }
   recursive: true
 log-host:
   name: 'Main Host'
 spring:
   main:
     web-application-type: none
+  application:
+    name: fileservice
+logging:
+  path: G:\systemlog
+  level:
+    root: info

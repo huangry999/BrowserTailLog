@@ -51,11 +51,11 @@ public class ChangeDirectoryHandler extends BasicAuthRequestHandler<PathRequest>
             result = this.fileService.list(request.getHostName(), request.getPath());
             subscriberManager.remove(ctx, DirectoryFileFilter.INSTANCE);
             Subscriber subscriber = new LinkedSubscribe(request.getHostName(), new File(request.getPath()), ctx);
-            subscriber.setDeleteHandler(s -> {
+            subscriber.setDeleteHandler(() -> {
                 send(fileService.list(request.getHostName(), null), ctx, request);
                 logger.debug("{} delete, send empty dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
             });
-            subscriber.setModifyHandler(s -> {
+            subscriber.setModifyHandler(() -> {
                 logger.debug("{} modify, send latest dir files info to {}", request.getPath(), ctx.channel().remoteAddress());
                 List<LogFileAttribute> data = this.fileService.list(request.getHostName(), request.getPath());
                 send(data, ctx, request);

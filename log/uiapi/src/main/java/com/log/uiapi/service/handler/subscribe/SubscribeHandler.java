@@ -36,14 +36,14 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
     }
 
     @Override
-    protected void handle(ChannelHandlerContext ctx, LogP msg, PathRequest request) throws Exception {
+    protected void handle(ChannelHandlerContext ctx, LogP msg, PathRequest request) {
         File file = new File(request.getPath());
         log.debug("Create new subscribe {} to log {}", ctx.channel().remoteAddress(), request.getPath());
         LinkedSubscribe subscriber = new LinkedSubscribe(request.getHostName(), file, ctx);
-        subscriber.setModifyHandler(s -> {
+        subscriber.setModifyHandler(() -> {
             try {
                 subscriber.getLock().lock();
-                List<LogLineText> contents = fileService.read(s.getHostName(), s.getFile().getPath(), subscriber.getReadIndex(), Integer.MAX_VALUE);
+                List<LogLineText> contents = fileService.read(request.getHostName(), request.getPath(), subscriber.getReadIndex(), Integer.MAX_VALUE);
                 log.debug("{} change, will send content lines skip {} and take {}, dst: {}",
                         file.getAbsolutePath(),
                         subscriber.getReadIndex(),
@@ -51,7 +51,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
                         .addData("data", contents)
-                        .addData("path", s.getFile().getPath())
+                        .addData("path", request.getPath())
                         .setMode(Mode.MODIFY)
                         .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
@@ -63,14 +63,14 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
             } catch (Exception e) {
                 log.error(
                         "log {} modified and send frame to {} error: ",
-                        s.getFile().getAbsolutePath(),
+                        request.getPath(),
                         ctx.channel().remoteAddress(),
                         e);
             } finally {
                 subscriber.getLock().unlock();
             }
         });
-        subscriber.setDeleteHandler(s -> {
+        subscriber.setDeleteHandler(() -> {
             try {
                 subscriber.getLock().lock();
                 subscriber.setReadIndex(0);
@@ -80,25 +80,25 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                 LogP logP = LogPFactory.defaultInstance0()
                         .setMode(Mode.DELETE)
                         .setRespond(Respond.NEW_LOG_CONTENT)
-                        .addData("path", s.getFile().getPath())
+                        .addData("path", request.getPath())
                         .create();
                 ctx.writeAndFlush(logP).sync();
             } catch (Exception e) {
                 log.error(
                         "log {} delete and send frame to {} error: ",
-                        s.getFile().getAbsolutePath(),
+                        request.getPath(),
                         ctx.channel().remoteAddress(),
                         e);
             } finally {
                 subscriber.getLock().unlock();
             }
         });
-        subscriber.setCreateHandler(s -> {
+        subscriber.setCreateHandler(() -> {
             try {
                 subscriber.getLock().lock();
-                long lastLineIndex = fileService.totalLineNo(s.getHostName(), s.getFile().getPath());
+                long lastLineIndex = fileService.totalLineNo(request.getHostName(), request.getPath());
                 long skip = lastLineIndex <= windowSize ? 0 : lastLineIndex - windowSize;
-                List<LogLineText> contents = fileService.read(s.getHostName(), s.getFile().getPath(), skip, windowSize);
+                List<LogLineText> contents = fileService.read(request.getHostName(), request.getPath(), skip, windowSize);
                 log.debug("{} create, will send content lines skip {} and take {}, dst: {}",
                         file.getAbsolutePath(),
                         skip,
@@ -106,7 +106,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
                         ctx.channel().remoteAddress());
                 LogP logP = LogPFactory.defaultInstance0()
                         .addData("data", contents)
-                        .addData("path", s.getFile().getPath())
+                        .addData("path", request.getPath())
                         .setMode(Mode.CREATE)
                         .setRespond(Respond.NEW_LOG_CONTENT)
                         .create();
@@ -118,7 +118,7 @@ public class SubscribeHandler extends BasicAuthRequestHandler<PathRequest> {
             } catch (Exception e) {
                 log.error(
                         "log {} create and send frame to {} error: ",
-                        s.getFile().getAbsolutePath(),
+                        request.getPath(),
                         ctx.channel().remoteAddress(),
                         e);
             } finally {

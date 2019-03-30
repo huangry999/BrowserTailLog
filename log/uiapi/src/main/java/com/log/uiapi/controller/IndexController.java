@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("index")
+@RequestMapping("api/index")
 public class IndexController {
     @Value("${uiapi-properties.window-size}")
     private int windowSize;

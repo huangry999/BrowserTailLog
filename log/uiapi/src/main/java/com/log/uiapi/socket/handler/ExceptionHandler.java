@@ -8,10 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ChannelHandler.Sharable
 @Slf4j
@@ -27,11 +24,11 @@ public class ExceptionHandler extends ChannelInboundHandlerAdapter {
             if (respondStatus == RespondStatus.UNAUTHORIZED) {
                 LogP response = LogPFactory.defaultInstance0().create0(respondStatus, cause.getMessage());
                 ctx.channel().writeAndFlush(response);
-                return;
             }
+        } else {
+            log.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);
+            LogP response = LogPFactory.defaultInstance0().create0(RespondStatus.INTERNAL_SERVER_ERROR, cause.getMessage());
+            ctx.channel().writeAndFlush(response);
         }
-        log.error("{} catch exception -- ", ctx.channel().remoteAddress(), cause);
-        CloseWebSocketFrame response = new CloseWebSocketFrame(RespondStatus.INTERNAL_SERVER_ERROR.getCode(), cause.getMessage());
-        ctx.channel().writeAndFlush(response);
     }
 }

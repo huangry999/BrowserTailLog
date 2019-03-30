@@ -1,0 +1,17 @@
+ui-host:
+  host: 127.0.0.1 # api服务器地址，默认 127.0.0.1
+  port: 23330 # api服务器grpc端口，默认23330
+file-monitor:
+  interval-ms: 3000 # 轮询日志变化间隔，单位：毫秒，默认3000
+file-reader:
+  sampling-interval: 100 # 索引间隔，默认100
+grpc:
+  port: 23331 # grpc 端口
+log-file:
+  path:
+    - { path: "G:\\log", alias: "log" }# 日志文件根路径
+  suffix:
+    - ".log" # 日志文件后缀名，可选，默认空
+  recursive: true # 包含子文件夹，默认包含
+log-host:
+  name: 'Demo' # 服务器名称，需要和api服务器统一

@@ -1,37 +1,28 @@
-spring:
-  profiles:
-    active: dev
 grpc:
   enabled: true
-  port: 23330
+  port: 10902
 uiapi-properties:
   netty:
     http-block-max-byte: 65535
     ssl: false
-    port: 8081
-    address: 192.168.1.101
+    port: 10901
   security:
     auth:
     expire-minutes: 30
   window-size: 100
   shrink-threshold: 100
   hosts:
-    - {ip: 192.168.1.101, name: Main Host, desc: 'test machine', rpc-port: 23331}
+    - { ip: 127.0.0.1, name: Main Host, desc: 'test machine', rpc-port: 10903 }
   subscribe:
     log: true
     log-sampling-second: 10
-
----
+logging:
+  path: G:\systemlog
+  level:
+    root: info
+    subscribe: info
 spring:
-  profiles: dev
+  application:
+    name: uiapi
 server:
-  port: 8080
   address: 127.0.0.1
-  servlet:
-    context-path: /log
----
-spring:
-  profiles:  prod
-server:
-  port: 80
-  address: 120.79.200.215

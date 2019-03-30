@@ -1,8 +1,8 @@
 package com.log.uiapi.socket.handler;
 
-import com.log.common.spring.SpringUtils;
 import com.log.uiapi.protocol.logp.LogP;
 import com.log.uiapi.service.handler.RequestHandler;
+import com.log.uiapi.spring.SpringUtils;
 import com.log.uiapi.subscribe.SubscriberManager;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

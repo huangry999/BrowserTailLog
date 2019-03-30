@@ -1,13 +1,13 @@
 package com.log.uiapi.protocol.constants;
 
 import com.log.common.constant.CodedConstant;
-import com.log.common.spring.SpringUtils;
 import com.log.uiapi.service.handler.RequestHandler;
 import com.log.uiapi.service.handler.cancelsubscribe.CancelSubscribeHandler;
 import com.log.uiapi.service.handler.cd.ChangeDirectoryHandler;
 import com.log.uiapi.service.handler.requestbetween.RequestBetweenHandler;
 import com.log.uiapi.service.handler.subscribe.SubscribeHandler;
 import com.log.uiapi.service.handler.token.TokenHandler;
+import com.log.uiapi.spring.SpringUtils;
 
 public enum Request implements CodedConstant {
     NONE(0x0, null),

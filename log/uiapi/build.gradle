@@ -1,4 +1,6 @@
-dependencies{
+apply plugin: 'com.google.protobuf'
+
+dependencies {
     compile('org.springframework.boot:spring-boot-starter-security')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.springframework.security:spring-security-test')
@@ -23,5 +25,8 @@ protobuf {
         all()*.plugins { grpc {} }
     }
 }
-startScripts.enabled = false
-mainClassName="com.log.uiapi.UiWebSocketApplication"
+
+processResources {
+    from(rootProject.rootDir.path + "/ui/build") { into 'static' }
+}
+mainClassName="com.log.uiapi.UiApplication"

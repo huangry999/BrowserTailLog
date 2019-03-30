@@ -14,4 +14,12 @@ public class Test {
         System.out.println(FilenameUtils.directoryContains(d1, d3));
         System.out.println(FilenameUtils.directoryContains(d1, d4));
     }
+
+    @org.junit.Test
+    public void prefix() throws IOException {
+        String d1 = "G:/log";
+        String d2 = "G:/log/3.log";
+        System.out.println(FilenameUtils.getPrefix(d1));
+        System.out.println(FilenameUtils.getPrefix(d2));
+    }
 }

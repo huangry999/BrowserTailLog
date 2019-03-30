@@ -1,10 +1,10 @@
 package com.log.uiapi.service.handler;
 
-import com.log.common.spring.SpringUtils;
 import com.log.uiapi.protocol.constants.RespondStatus;
 import com.log.uiapi.protocol.exception.LogPException;
 import com.log.uiapi.protocol.logp.LogP;
 import com.log.uiapi.security.AuthorizationServerConfig;
+import com.log.uiapi.spring.SpringUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.core.AuthenticationException;
