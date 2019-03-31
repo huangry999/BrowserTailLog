@@ -20,6 +20,6 @@ spring:
   application:
     name: fileservice
 logging:
-  path: G:\systemlog
+  path: systemlog
   level:
     root: info

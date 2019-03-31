@@ -1,15 +1,23 @@
 server:
-  port: 8080 # tomcat 端口
-  address: 127.0.0.1 # tomcat 监听地址
+  port: 8080 # tomcat 端口，默认 8080
+  address: 127.0.0.1 # tomcat 监听地址，默认 127.0.0.1
 grpc:
-  port: 23330 # grpc 端口，默认23330
+  port: 10902 # grpc 端口，10902
 uiapi-properties:
   netty:
-    port: 8081 # websocket服务端口，默认8081
-    address: 127.0.0.1 # websocket服务监听地址，默认127.0.0.1
+    port: 8081 # websocket服务端口，如果修改需要修改ui/config/index.js中的配置，默认8081
   security:
     auth: # 需要验证密码，可选，默认不需要
     expire-minutes: 30 # session过期时间，默认30分钟
-  # file service 服务，name需要与host配置文件相同
-  hosts:
-    - {ip: 127.0.0.1, name: Demo, desc: 'Demo Host', rpc-port: 23331}
+    # file service 服务，name需要与host配置文件相同
+    # ip: file service ip
+    # name: file service配置中的log-host.name
+    # desc: 在ui中显示
+    # rpc-port ile service配置中的grpc.port
+    hosts:
+      - {ip: 127.0.0.1, name: Demo, desc: 'Demo Host', rpc-port: 23331}
+logging:
+  path: systemlog # 系统日志路径，默认为 runDir/systemlog
+  level:
+    root: info # 系统日志等级，默认为info
+    subscribe: info #统计订阅者的日志，info时打印到日志文件，默认info

@@ -53,6 +53,7 @@ public class FileEventNotification extends FileEventNotificationServiceGrpc.File
                     throw new RuntimeException("unknown event type: " + eventType);
             }
         }
+        responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
     }
 }

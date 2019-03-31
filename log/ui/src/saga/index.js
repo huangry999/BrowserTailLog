@@ -37,7 +37,7 @@ function* websocketWatch(socket, store) {
 
 function* redirectWatch(store) {
   yield takeEvery(types.FIND_BY_LINE, (action) => {
-    put(getLogBetween(action.path, action.lineNo - 1, action.take));
+    store.dispatch(getLogBetween(action.path, action.lineNo - 1, action.take));
   });
   yield takeEvery(types.RESP_LOGIN_SUCCESS, () => put(gotoHost()));
   yield takeEvery(types.GOTO_LOGIN, (action) => {
@@ -52,8 +52,8 @@ function* redirectWatch(store) {
   yield takeEvery(types.INTO_HOST, (action) => history.push(`/${action.host.name}/log`));
   yield takeEvery(types.OPEN_LOG, (action) => {
     const hostName = store.getState().host.currentHost.name;
-    window.open(`/#/${hostName}/read/${action.key}`);
-    //history.push(`/${hostName}/read/${action.key}`)
+    //window.open(`/#/${hostName}/read/${action.key}`);
+    history.push(`/${hostName}/read/${action.key}`)
   });
 }
 

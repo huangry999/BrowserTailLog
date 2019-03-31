@@ -1,7 +1,9 @@
 const config = {
   ip: window.location.hostname,
   port: window.location.port,
-  //port: 8080,
   wsPort: 10901,
+}
+if (localStorage.getItem('testPort')) {
+  config.port = parseInt(localStorage.getItem('testPort'), 10);
 }
 export default config;

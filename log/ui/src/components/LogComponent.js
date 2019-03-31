@@ -19,8 +19,6 @@ export default class LogComponent extends React.Component {
       }
       if (scrollPercent === 1) {
         this.clickToBottom();
-      } else if (this.props.log.logStatus.lockBottom) {
-        this.props.setLockBottom(false);
       }
     });
   }
@@ -59,10 +57,13 @@ export default class LogComponent extends React.Component {
     if (scrollPercent === 1 && e.deltaY > 0) {
       this.props.fetchLogContentDwon();
     }
+    if (e.deltaY < 0 && this.props.log.logStatus.lockBottom) {
+      this.props.setLockBottom(false);
+    }
   }
 
   render() {
-    let content = Object.values(this.props.log.data).map(d => <p className='log-row' key={d.lineNo}><span>{d.lineNo}</span><pre>{d.text}</pre></p>)
+    let content = Object.values(this.props.log.data).map(d => <div className='log-row' key={d.lineNo}><span>{d.lineNo}</span><pre>{d.text}</pre></div>)
     return (
       <div onWheel={this.wheelEventHandler}>
         <Card
