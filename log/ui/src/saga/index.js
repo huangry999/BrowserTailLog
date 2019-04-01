@@ -6,6 +6,8 @@ import { getLogBetween, setHost, setInit, loginSuccess, gotoHost, gotoLogin, doL
 import * as Api from './fetchData'
 import { history } from '../Root'
 
+const debug = localStorage.getItem("debug");
+
 function* websocketWatch(socket, store) {
   yield takeLatest(types.INTO_DIR, (action) => {
     const f = encode(Request.CHANGE_DIR, { hostName: store.getState().host.currentHost.name, path: action.dir });
@@ -52,8 +54,11 @@ function* redirectWatch(store) {
   yield takeEvery(types.INTO_HOST, (action) => history.push(`/${action.host.name}/log`));
   yield takeEvery(types.OPEN_LOG, (action) => {
     const hostName = store.getState().host.currentHost.name;
-    //window.open(`/#/${hostName}/read/${action.key}`);
-    history.push(`/${hostName}/read/${action.key}`)
+    if (debug) {
+      history.push(`/${hostName}/read/${action.key}`)
+    } else {
+      window.open(`/#/${hostName}/read/${action.key}`);
+    }
   });
 }
 

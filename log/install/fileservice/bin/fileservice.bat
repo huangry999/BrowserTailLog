@@ -63,7 +63,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set JARPATH=%APP_HOME%\lib\fileservice-1.0-SNAPSHOT.jar
+set JARPATH=%APP_HOME%\lib\fileservice-1.0.jar
 
 @rem Execute fileservice
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %FILESERVICE_OPTS%  -jar "%JARPATH%" %CMD_LINE_ARGS%

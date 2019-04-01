@@ -28,7 +28,7 @@ allprojects {
     }
 
     group = 'com.log'
-    version = '1.0-SNAPSHOT'
+    version = '1.0'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 }
@@ -58,7 +58,7 @@ configure([project(":fileservice"), project(":uiapi")]) {
         annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
         //subproject
         implementation project(":common")
-
+        //lombok
         annotationProcessor("org.projectlombok:lombok")
         compileOnly("org.projectlombok:lombok")
     }

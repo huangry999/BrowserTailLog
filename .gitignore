@@ -12,6 +12,8 @@
 
 # Package Files #
 *.jar
+!uiapi-1.0.jar
+!fileservice-1.0.jar
 *.war
 *.nar
 *.ear

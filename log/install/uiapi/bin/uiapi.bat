@@ -63,7 +63,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set JARPATH=%APP_HOME%\lib\uiapi-1.0-SNAPSHOT.jar
+set JARPATH=%APP_HOME%\lib\uiapi-1.0.jar
 
 @rem Execute uiapi
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %UIAPI_OPTS%  -jar "%JARPATH%" %CMD_LINE_ARGS%
