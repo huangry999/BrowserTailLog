@@ -40,7 +40,7 @@ filerservice/bin/application.yml
 ```
 #-----------------------请注意以下配置可能需要根据实际部署更改---------------------------#
 grpc:
-  port: 10903 # grpc 端口，多个filer service 服务需要配置不用端口，默认 10903
+  port: 10903 # grpc 端口，默认 10903
 ui-host:
   host: 127.0.0.1 # api服务器web地址，默认 127.0.0.1
   port: 8080 # api服务器web端口，默认 8080
