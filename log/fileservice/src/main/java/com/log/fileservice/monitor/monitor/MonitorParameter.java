@@ -7,7 +7,6 @@ import java.util.List;
 
 @Data
 public class MonitorParameter {
-    private MonitorListener monitorListener;
     private List<String> roots;
     private FileFilter fileFilter;
 }
