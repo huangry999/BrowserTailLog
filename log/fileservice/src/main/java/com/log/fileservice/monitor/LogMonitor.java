@@ -2,48 +2,22 @@ package com.log.fileservice.monitor;
 
 import com.log.fileservice.config.LogFileProperties;
 import com.log.fileservice.config.bean.Path;
-import com.log.fileservice.grpc.EventType;
-import com.log.fileservice.grpc.FileEventNotification;
-import com.log.fileservice.grpc.FileType;
 import com.log.fileservice.monitor.monitor.Monitor;
 import com.log.fileservice.monitor.monitor.MonitorFactory;
-import com.log.fileservice.monitor.monitor.MonitorListener;
 import com.log.fileservice.monitor.monitor.MonitorParameter;
-import com.log.fileservice.notify.NotificationService;
-import com.log.fileservice.service.LogFileService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class LogMonitor {
-    private final ExecutorService executorService;
     private final Monitor monitor;
-    @Value("${log-host.name}")
-    private String hostName;
-    private final NotificationService notificationService;
-
-    /**
-     * release resources
-     */
-    public void destroy() {
-        if (this.executorService != null) {
-            this.executorService.shutdown();
-        }
-        this.notificationService.destroy();
-    }
 
     @Autowired
-    public LogMonitor(MonitorFactory factory, LogFileProperties logFileProperties, LogFileService logFileService, NotificationService notificationService) {
-        executorService = Executors.newCachedThreadPool();
+    public LogMonitor(MonitorFactory factory, LogFileProperties logFileProperties) {
         MonitorParameter parameter = new MonitorParameter();
         parameter.setRoots(logFileProperties.getPath().stream().map(Path::getPath).collect(Collectors.toList()));
         parameter.setFileFilter(logFileProperties.getFilter());
@@ -142,7 +116,6 @@ public class LogMonitor {
             }
         });
         monitor = factory.newMonitor(parameter);
-        this.notificationService = notificationService;
     }
 
     /**
@@ -155,6 +128,14 @@ public class LogMonitor {
 
         } catch (Exception e) {
             log.error("start monitor error. ", e);
+        }
+    }
+
+    public void destroy() {
+        try {
+            this.monitor.release();
+        } catch (Exception e) {
+            log.error("monitor destroy error", e);
         }
     }
 }

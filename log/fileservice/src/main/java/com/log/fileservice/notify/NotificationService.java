@@ -23,7 +23,7 @@ public class NotificationService {
     private final DiscoveryClient discoveryClient;
 
     @Autowired
-    public NotificationService(DiscoveryClient discoveryClient) {
+    public NotificationService(DiscoveryClient discoveryClient, LogFileService fileService) {
         this.discoveryClient = discoveryClient;
     }
 
@@ -44,8 +44,8 @@ public class NotificationService {
         }
         if (uiChannel == null) {
             synchronized (this) {
-                log.info("init ui service channel");
                 if (uiChannel == null) {
+                    log.info("init ui service channel");
                     uiChannel = NettyChannelBuilder.forAddress(uiInstance.getHost(), uiInstance.getPort())
                             .negotiationType(NegotiationType.PLAINTEXT)
                             .build();
