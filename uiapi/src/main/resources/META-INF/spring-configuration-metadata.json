@@ -1,0 +1,67 @@
+{
+  "properties": [
+    {
+      "name": "uiapi-properties.netty.http-block-max-byte",
+      "type": "java.lang.Integer",
+      "defaultValue": 65535
+    },
+    {
+      "name": "uiapi-properties.netty.ssl",
+      "type": "java.lang.Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "uiapi-properties.netty.port",
+      "type": "java.lang.Integer"
+    },
+    {
+      "name": "uiapi-properties.netty.address",
+      "type": "java.lang.String",
+      "defaultValue": "127.0.0.1"
+    },
+    {
+      "name": "uiapi-properties.security.auth",
+      "type": "java.lang.String",
+      "defaultValue": ""
+    },
+    {
+      "name": "uiapi-properties.security.expire-minutes",
+      "type": "java.lang.Integer",
+      "defaultValue": 30
+    },
+    {
+      "name": "uiapi-properties.window-size",
+      "type": "java.lang.Integer",
+      "defaultValue": 100
+    },
+    {
+      "name": "uiapi-properties.shrink-threshold",
+      "type": "java.lang.Integer",
+      "defaultValue": 100
+    },
+    {
+      "name": "uiapi-properties.hosts",
+      "type": "java.util.List"
+    },
+    {
+      "name": "uiapi-properties.subscribe.log",
+      "type": "java.lang.Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "uiapi-properties.subscribe.log-sampling-second",
+      "type": "java.lang.Integer",
+      "defaultValue": 10
+    },
+    {
+      "name": "eureka.ui-app-group-name",
+      "type": "java.lang.String",
+      "defaultValue": "uiapi"
+    },
+    {
+      "name": "eureka.file-service-app-group-name",
+      "type": "java.lang.String",
+      "defaultValue": "fileservice"
+    }
+  ]
+}

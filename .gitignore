@@ -29,6 +29,7 @@ hs_err_pid*
 out
 build
 .gradle
+cache
 
 #node
 package-lock.json
@@ -36,4 +37,4 @@ node_modules
 .vscode
 
 cache
-/log/log
+/log

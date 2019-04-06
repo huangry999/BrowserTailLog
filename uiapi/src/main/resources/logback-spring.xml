@@ -1,0 +1,52 @@
+<configuration>
+    <springProperty name="logPath" source="logging.path" defaultValue="log"/>
+    <springProperty name="level" source="logging.level"/>
+    <springProperty name="app" source="spring.application.name" defaultValue="uiapi"/>
+    <appender name="Console"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}) [%file:%line]: %msg%n%throwable
+            </Pattern>
+        </encoder>
+    </appender>
+
+    <property name="LOG_HOME" value="${logPath}/${app}"/>
+    <property name="ROLLING_HOME" value="${logPath}/${app}/rolling"/>
+
+    <appender name="SystemFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/system.log</file>
+        <encoder>
+            <pattern>%p [%d{yyyy-MM-dd HH:mm:ss,SSS}] %c{3}:[%C{1}:%M:%L] - [%t] - %m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${ROLLING_HOME}/system-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <maxHistory>2</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SubscribeFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/subscriber.log</file>
+        <encoder>
+            <pattern>%p [%d{yyyy-MM-dd HH:mm:ss,SSS}] %c{3}:[%C{1}:%M:%L] - [%t] - %m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${ROLLING_HOME}/subscriber-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <maxHistory>2</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
+    <root level="${level.root}">
+        <appender-ref ref="SystemFile"/>
+        <appender-ref ref="Console"/>
+    </root>
+
+    <Logger name="com.log.uiapi.subscribe" level="${level.subscribe}" additivity="false">
+        <appender-ref ref="SubscribeFile"/>
+    </Logger>
+</configuration>

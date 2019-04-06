@@ -1,0 +1,11 @@
+.log-row {
+  margin: 0
+}
+
+.log-row span {
+  background-color: #e0e0e0
+}
+
+.log-row pre {
+  display: inline
+}
