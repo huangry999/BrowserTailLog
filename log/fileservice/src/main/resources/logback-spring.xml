@@ -1,7 +1,7 @@
 <configuration>
-    <springProperty scope="context" name="path" source="logging.path"/>
-    <springProperty scope="context" name="level" source="logging.level"/>
-    <springProperty scope="context" name="app" source="spring.application.name"/>
+    <springProperty name="logPath" source="logging.path" defaultValue="log"/>
+    <springProperty name="level" source="logging.level"/>
+    <springProperty name="app" source="log-host.name" defaultValue="fileservice"/>
     <appender name="Console"
               class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -11,8 +11,8 @@
         </encoder>
     </appender>
 
-    <property name="LOG_HOME" value="${path}/${app}"/>
-    <property name="ROLLING_HOME" value="${path}/${app}/rolling"/>
+    <property name="LOG_HOME" value="${logPath}/${app}"/>
+    <property name="ROLLING_HOME" value="${logPath}/${app}/rolling"/>
 
     <appender name="SystemFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/system.log</file>

@@ -15,6 +15,13 @@ buildscript {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
+    apply plugin: 'eclipse'
+
+    ext {
+        grpcVersion = '1.18.0'
+        protobufVersion = '3.6.1'
+        protocVersion = '3.6.1'
+    }
 
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public' }
@@ -37,21 +44,27 @@ configure([project(":fileservice"), project(":uiapi")]) {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'application'
 
-    ext {
-        grpcVersion = '1.18.0'
-        protobufVersion = '3.6.1'
-        protocVersion = '3.6.1'
+    dependencyManagement {
+        imports {
+            mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Finchley.SR2'
+        }
     }
 
     dependencies {
         compile('org.springframework.boot:spring-boot-starter-web')
         compile('org.springframework.boot:spring-boot-starter-webflux')
         compile('org.springframework.boot:spring-boot-starter-actuator')
+        compile "org.springframework.boot:spring-boot-configuration-processor"
+        // eureka
+        compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server')
+        compile('org.springframework.cloud:spring-cloud-starter-eureka:1.4.6.RELEASE')
+        // grpc starter
+        compile 'io.github.lognet:grpc-spring-boot-starter:3.2.0'
+        // be compatible for java 9+
+        compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+        // common
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
         compile group: 'commons-io', name: 'commons-io', version: '2.6'
-        compile "org.springframework.boot:spring-boot-configuration-processor"
-        compile 'io.github.lognet:grpc-spring-boot-starter:3.2.0'
-        compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
         //test
         testCompile('org.springframework.boot:spring-boot-starter-test')
         testCompile('io.projectreactor:reactor-test')

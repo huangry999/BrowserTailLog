@@ -1,4 +1,4 @@
-import { updateFileList, getNewLogContent, logContentBetween, gotoLogin, init } from '../action'
+import { updateFileList, getNewLogContent, logContentBetween, gotoLogin, init, wsError } from '../action'
 import { decode } from '../protocol/ProtocolUtil'
 import Respond from '../protocol/Respond'
 import RespondStatus, { valueOf } from '../constant/RespondStatus'
@@ -7,6 +7,7 @@ import Config from '../config';
 const setupSocket = (dispatch) => {
   const socket = new WebSocket(`ws://${Config.ip}:${Config.wsPort}/log`);
   socket.onerror = (event) => {
+    dispatch(wsError(event));
     console.error(event);
   }
   socket.onopen = () => {
@@ -14,6 +15,7 @@ const setupSocket = (dispatch) => {
     dispatch(init());
   }
   socket.onclose = () => {
+    dispatch(wsError('websocket close'));
     console.info("websocket close");
   }
 
@@ -28,6 +30,7 @@ const setupSocket = (dispatch) => {
               dispatch(gotoLogin(data.msg));
               return;
             default:
+              dispatch(wsError(data.msg));
               console.error(data.msg);
               return;
           }

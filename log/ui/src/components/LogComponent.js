@@ -25,10 +25,10 @@ export default class LogComponent extends React.Component {
 
   componentDidUpdate() {
     this.scrollToBottom();
-    if (this.props.log.logStatus.loading && !this.displayRequestLoadingMessage) {
-      message.loading(this.props.tipInfo.loadingInfo, 0);
+    if (this.props.log.logStatus.showMessage && !this.displayRequestLoadingMessage) {
+      message.loading(this.props.tipInfo.logMessage, 5)
       this.displayRequestLoadingMessage = true
-    } else if (!this.props.log.logStatus.loading) {
+    } else if (!this.props.log.logStatus.showMessage) {
       message.destroy();
       this.displayRequestLoadingMessage = false;
     }

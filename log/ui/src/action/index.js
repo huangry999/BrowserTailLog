@@ -80,3 +80,6 @@ export const intoHost = (host) => {
 }
 export const fetchHost = () => ({ type: Types.FETCH_HOST })
 export const setHost = (hosts) => ({ type: Types.RESP_FETCH_HOST, hosts })
+
+export const wsError = (message) => ({ type: Types.WS_ERROR, message })
+export const httpError = (message) => ({ type: Types.HTTP_ERROR, message })

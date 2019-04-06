@@ -1,25 +1,47 @@
 ui-host:
   host: 127.0.0.1
-  port: 10902
+  port: 8080
 file-monitor:
   interval-ms: 3000
 file-reader:
   sampling-interval: 100
 grpc:
   enabled: true
-  port: 10903
+  port: 10904
 log-file:
   path:
-    - { path: "G:\\log", alias: 'test' }
+  suffix:
   recursive: true
 log-host:
-  name: 'Main Host'
+  name: 'SERVICE ${grpc.port}'
+  desc:
 spring:
-  main:
-    web-application-type: none
   application:
     name: fileservice
+  main:
+    web-application-type: none
+  profiles:
+    active: dev
 logging:
-  path: systemlog
+  path: log
   level:
     root: info
+eureka:
+  ui-app-name: uiapi
+  server:
+    eviction-interval-timer-in-ms: 10000
+  instance:
+    non-secure-port: ${grpc.port}
+    app-group-name: "fileservice"
+    instance-id: ${log-host.name}
+    lease-expiration-duration-in-seconds: 10
+    lease-renewal-interval-in-seconds: 5
+  client:
+    service-url:
+      defaultZone: http://${ui-host.host}:${ui-host.port}/eureka/
+---
+spring:
+  profiles: dev
+log-file:
+  path:
+    - { path: 'G:\log'}

@@ -32,7 +32,16 @@
       "defaultValue": 100
     },
     {
+      "name": "eureka.ui-app-name",
+      "type": "java.lang.String",
+      "defaultValue": "uiapi"
+    },
+    {
       "name": "log-host.name",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "log-host.desc",
       "type": "java.lang.String"
     }
   ]

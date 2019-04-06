@@ -1,21 +1,31 @@
+#-----------------------请注意以下配置可能需要根据实际部署更改---------------------------#
+grpc:
+  port: 10903 # grpc 端口，多个filer service 服务需要配置不用端口，默认 10903
 ui-host:
-  host: 127.0.0.1 # api服务器地址，默认 127.0.0.1
-  port: 10902 # api服务器grpc端口，默认 10902
+  host: 127.0.0.1 # api服务器web地址，默认 127.0.0.1
+  port: 8080 # api服务器web端口，默认 8080
+log-file:
+  path:
+    # 日志根目录路径
+    # path：文件夹的绝对路径，需要用''括起来，必填
+    # alias：在ui显示的别名，默认为path按文件夹分割符分割后的最后一个文件名
+    - { path: '/usr/local/log'}
+  suffix:
+    - '' # 过滤日志文件后缀名，默认不过滤
+  recursive: true # 包含子文件夹，默认包含
+
+#-------------------------以下为系统功能性配置，按默认配置或自定义皆可-------------------------#
 file-monitor:
   interval-ms: 3000 # 轮询日志变化间隔，单位：毫秒，默认3000
 file-reader:
   sampling-interval: 100 # 建立索引的行数间隔，间隔越大占内存越小但读取操作约慢，默认100
-grpc:
-  port: 10903 # grpc 端口，多个filer service 服务需要配置不用端口，默认 10903
-log-file:
-  path:
-    - { path: "G:\\log", alias: "log" }# 日志根目录路径，path 为绝对路径【必填】，可以取别名（在ui显示，默认为path最后一个文件路径名）
-  suffix:
-    - ".log" # 过滤日志文件后缀名，默认留空不过滤
-  recursive: true # 包含子文件夹，默认包含
 log-host:
-  name: 'Demo' # 服务器名称，需要和api服务器统一
+  name: SERVICE ${grpc.port} # Log服务器名称，多个File Service实例间不能相同，默认SERVICE + grpc.port
+  desc: # Log 服务的信息，会显示在ui上，默认为空
 logging:
-  path: systemlog # 系统日志路径，默认为 runDir/systemlog
+  path: log # 系统日志路径，默认为 runDir/log
   level:
     root: info # 系统日志等级，默认为info
+spring:
+  profiles:
+    active: prod

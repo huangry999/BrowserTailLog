@@ -34,3 +34,6 @@ build
 package-lock.json
 node_modules
 .vscode
+
+cache
+/log/log

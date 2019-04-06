@@ -40,7 +40,7 @@ export function dir(state = defDirState, action) {
 const initLogStastus = {
   receiveStatus: ReceiveStatus.RUNNING,
   lockBottom: true,
-  loading: false,
+  showMessage: false,
   mode: ViewMode.SCAN,
 }
 function logStatus(state = initLogStastus, action) {
@@ -50,11 +50,12 @@ function logStatus(state = initLogStastus, action) {
     case Types.SET_LOCK_BOTTOM:
       return Object.assign({}, state, { lockBottom: action.isLock });
     case Types.LOAD_LOG:
-      return Object.assign({}, initLogStastus, { loading: true });
+      return Object.assign({}, initLogStastus, { showMessage: true });
     case Types.GET_LOG_BETWEEN:
-      return Object.assign({}, state, { loading: true });
+    case Types.WS_ERROR:
+      return Object.assign({}, state, { showMessage: true });
     case Types.RESP_GET_LOG_BETWEEN:
-      return Object.assign({}, state, { loading: false });
+      return Object.assign({}, state, { showMessage: false });
     case Types.FIND_BY_LINE:
       return Object.assign({}, state, { mode: ViewMode.FIND_LINE, lockBottom: false, receiveStatus: ReceiveStatus.PAUSE });
     default:
@@ -78,12 +79,14 @@ function cache(state = { data: [], replace: false }, action, logStatus) {
         default:
           return state;
       }
+    case Types.LOAD_LOG:
+      return { data: [], replace: false }
     default:
       return state;
   }
 }
 
-export function log(state = { data: [] }, action) {
+export function log(state = { data: [], currentPath: '' }, action) {
   const copy = Object.assign({}, state);
   copy.logStatus = logStatus(state.logStatus, action);
   copy.cache = cache(state.cache, action, copy.logStatus);
@@ -147,6 +150,7 @@ export function log(state = { data: [] }, action) {
     case Types.FIND_BY_LINE:
     case Types.LOAD_LOG:
       copy.data = [];
+      copy.path = action.path;
       return copy;
     default:
       return copy;
@@ -165,9 +169,11 @@ export function configs(state = { windowSize: 100, shrinkThreshold: 100, needAut
 export function tipInfo(state = {}, action) {
   switch (action.type) {
     case Types.GET_LOG_BETWEEN:
-      return Object.assign(state, { loadingInfo: `Loading From ${action.skip + 1} To ${action.skip + action.take}` });
+      return Object.assign(state, { logMessage: `Loading From ${action.skip + 1} To ${action.skip + action.take}` });
     case Types.LOAD_LOG:
-      return Object.assign(state, { loadingInfo: `Loading...` });
+      return Object.assign(state, { logMessage: `Loading...` });
+    case Types.WS_ERROR:
+      return Object.assign(state, { logMessage: action.message });
     case Types.GOTO_LOGIN:
       return Object.assign(state, { loginTip: action.message });
     default:

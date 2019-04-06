@@ -52,6 +52,16 @@
       "name": "uiapi-properties.subscribe.log-sampling-second",
       "type": "java.lang.Integer",
       "defaultValue": 10
+    },
+    {
+      "name": "eureka.ui-app-group-name",
+      "type": "java.lang.String",
+      "defaultValue": "uiapi"
+    },
+    {
+      "name": "eureka.file-service-app-group-name",
+      "type": "java.lang.String",
+      "defaultValue": "fileservice"
     }
   ]
 }

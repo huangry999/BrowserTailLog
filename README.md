@@ -1,14 +1,13 @@
 # 在线查看日志工具
 无需登陆服务器，打开浏览器即可实现Linux *tail -f* 的功能
 <br/>
-[github](https://github.com/huangry999/logger)
+[github](https://github.com/huangry999/BrowserTailLog)
 ## 特性
 
 ### 可用性
-1. 适配集群，能够通过api服务器读取内网服务器日志文件。
-2. 过滤文件类型。
-3. 自建日志内容索引，加速文件读取。
-4. 界面提供多种工具——暂停、定位到行、滚轮上划暂停、滑倒底部实时显示最新内容等，方便日志的查看。
+1. Eureka 自动注册服务，适配集群，简化配置。
+2. 自建日志内容索引，加速文件读取。
+3. 界面提供多种工具——暂停、定位到行、滚轮上划暂停、滑倒底部实时显示最新内容等，方便日志的查看。
 
 ### 可靠性
 1. 基于OAuth2，可选择开启密码验证。
@@ -38,55 +37,66 @@
 **注意**：以下配置会覆盖系统内默认的application.yml。
 #### file service 配置
 filerservice/bin/application.yml
-<br/>Yaml风格，没说明可选且无默认值的都为必填项
 ```
+#-----------------------请注意以下配置可能需要根据实际部署更改---------------------------#
+grpc:
+  port: 10903 # grpc 端口，多个filer service 服务需要配置不用端口，默认 10903
 ui-host:
-  host: 127.0.0.1 # api服务器地址，默认 127.0.0.1
-  port: 10902 # api服务器grpc端口，默认 10902
+  host: 127.0.0.1 # api服务器web地址，默认 127.0.0.1
+  port: 8080 # api服务器web端口，默认 8080
+log-file:
+  path:
+    # 日志根目录路径
+    # path：文件夹的绝对路径，需要用''括起来，必填
+    # alias：在ui显示的别名，默认为path按文件夹分割符分割后的最后一个文件名
+    - { path: 'G:\log'}
+  suffix:
+    - '' # 过滤日志文件后缀名，默认不过滤
+  recursive: true # 包含子文件夹，默认包含
+
+#-------------------------以下为系统功能性配置，按默认配置或自定义皆可-------------------------#
 file-monitor:
   interval-ms: 3000 # 轮询日志变化间隔，单位：毫秒，默认3000
 file-reader:
   sampling-interval: 100 # 建立索引的行数间隔，间隔越大占内存越小但读取操作约慢，默认100
-grpc:
-  port: 10903 # grpc 端口，多个filer service 服务需要配置不用端口，默认 10903
-log-file:
-  path:
-    - { path: "G:\\log", alias: "log" }# 日志根目录路径，path 为绝对路径【必填】，可以取别名（在ui显示，默认为path最后一个文件路径名）
-  suffix:
-    - ".log" # 过滤日志文件后缀名，默认留空不过滤
-  recursive: true # 包含子文件夹，默认包含
 log-host:
-  name: 'Demo' # 服务器名称，需要和api服务器统一
+  name: SERVICE ${grpc.port} # Log服务器名称，多个File Service实例间不能相同，默认SERVICE + grpc.port
+  desc: # Log 服务的信息，会显示在ui上，默认为空
 logging:
-  path: systemlog # 系统日志路径，默认为 runDir/systemlog
+  path: log # 系统日志路径，默认为 runDir/log
   level:
-    root: info # 日志等级，默认为root
+    root: info # 系统日志等级，默认为info
+spring:
+  profiles:
+    active: prod
 ```
 #### api service 配置
 uiapi/bin/application.yml
-<br/>Yaml风格，没说明可选且无默认值的都为必填项
 ```
+#-----------------------请注意以下配置可能需要根据实际部署更改---------------------------#
 server:
-  port: 8080 # tomcat 端口，默认 8080
-  address: 127.0.0.1 # tomcat 监听地址，默认 127.0.0.1
+  port: 8080 # web端口，默认 8080
+  address: 127.0.0.1 # web监听地址，默认 127.0.0.1
 grpc:
   port: 10902 # grpc 端口，10902
+
+#-------------------------以下为系统功能性配置，按默认配置或自定义皆可-------------------------#
 uiapi-properties:
   netty:
-    port: 8081 # websocket服务端口，如果修改需要修改ui/config/index.js中的配置，默认8081
+    port: 10901 # websocket服务端口，如果修改需要修改ui/config/index.js中的配置，默认10901
   security:
     auth: # 需要验证密码，可选，默认不需要
     expire-minutes: 30 # session过期时间，默认30分钟
-    # file service 服务，name需要与host配置文件相同
-    # ip: file service ip
-    # name: file service配置中的log-host.name
-    # desc: 在ui中显示
-    # rpc-port ile service配置中的grpc.port
-    hosts:
-      - {ip: 127.0.0.1, name: Demo, desc: 'Demo Host', rpc-port: 23331}
 logging:
-  path: systemlog # 系统日志路径，默认为 runDir/systemlog
+  path: log # 系统日志路径，默认为 runDir/log
   level:
     root: info # 系统日志等级，默认为info
     subscribe: info #统计订阅者的日志，info时打印到日志文件，默认info
+eureka:
+  dashboard:
+    path: /eurekadashboard #Eureka监控页面访问路径，默认/eurekadashboard
+    enabled: true #是否开启Eureka监控页面，默认开启
+spring:
+  profiles:
+    active: prod
 ```

@@ -1,42 +1,76 @@
 package com.log.uiapi.service;
 
-import com.log.uiapi.config.HostsProperties;
-import com.log.uiapi.config.bean.Host;
-import io.grpc.ConnectivityState;
+import com.log.fileservice.grpc.Empty;
+import com.log.fileservice.grpc.FileServiceInfo;
+import com.log.fileservice.grpc.ServiceInfoGrpc;
+import com.log.uiapi.service.bean.Host;
+import com.netflix.appinfo.InstanceInfo;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.channel.ChannelException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceCanceledEvent;
+import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Slf4j
 public class HostService {
-    private final List<Host> hosts;
-    private final Map<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
+    private final Map<String, ManagedChannel> fileServiceIdChannelMap = new ConcurrentHashMap<>();
+    private final Map<String, Host> fileServiceIdContextMap = new ConcurrentHashMap<>();
+    @Value("${eureka.file-service-app-group-name:fileservice}")
+    private String fileServiceGroupAppName;
 
-    @Autowired
-    public HostService(HostsProperties hostsProperties) {
-        Set<String> checkDuplicate = new HashSet<>(hostsProperties.getHosts().size());
-        for (Host h : hostsProperties.getHosts()) {
-            if (checkDuplicate.contains(h.getName())) {
-                throw new IllegalArgumentException("Host in configuration must be unique");
-            } else {
-                checkDuplicate.add(h.getName());
-            }
+    @EventListener
+    public void listenFileServiceRegister(EurekaInstanceRegisteredEvent event) {
+        final InstanceInfo instanceInfo = event.getInstanceInfo();
+        log.info("new service register, group name: {}, id:{}, ip: {}, port: {}", instanceInfo.getAppGroupName(), instanceInfo.getId(), instanceInfo.getIPAddr(), instanceInfo.getPort());
+        if (instanceInfo.getAppGroupName() == null
+                || !instanceInfo.getAppGroupName().equalsIgnoreCase(this.fileServiceGroupAppName)) {
+            return;
         }
-        this.hosts = hostsProperties.getHosts();
+        ManagedChannel managedChannel = NettyChannelBuilder.forAddress(instanceInfo.getIPAddr(), instanceInfo.getPort())
+                .negotiationType(NegotiationType.PLAINTEXT)
+                .build();
+        fileServiceIdChannelMap.putIfAbsent(instanceInfo.getId(), managedChannel);
+        FileServiceInfo respond = ServiceInfoGrpc.newBlockingStub(managedChannel).fileService(Empty.newBuilder().build());
+        Host host = new Host();
+        host.setId(instanceInfo.getId());
+        host.setIp(instanceInfo.getIPAddr());
+        host.setName(respond.getHostName());
+        host.setRpcPort(instanceInfo.getPort());
+        host.setDesc(respond.getDesc());
+        fileServiceIdContextMap.put(instanceInfo.getId(), host);
+        log.info("file service context insert: {}", host.toString());
+    }
+
+    @EventListener
+    public void listenFileServiceCanceled(EurekaInstanceCanceledEvent event) {
+        final String id = event.getServerId();
+        this.fileServiceIdChannelMap.remove(id);
+        this.fileServiceIdContextMap.remove(id);
+        log.info("file service canceled, id:{}", id);
     }
 
     public Host get(String hostName) {
-        return hosts.stream().filter(h -> h.getName().equals(hostName)).findFirst().orElse(null);
+        return this.fileServiceIdContextMap.values()
+                .stream()
+                .filter(c -> c.getName().equals(hostName))
+                .findFirst()
+                .orElseThrow(() -> new MissingResourceException("Unknown host Exception", "Host", hostName));
     }
 
     public List<Host> getAll() {
-        return hosts;
+        return new ArrayList<>(this.fileServiceIdContextMap.values());
     }
 
     /**
@@ -47,39 +81,7 @@ public class HostService {
      * @throws ChannelException If the client is not available
      */
     public ManagedChannel getChannel(String hostName) throws ChannelException {
-        ManagedChannel result = null;
-        if (!channelMap.containsKey(hostName)) {
-            synchronized (this) {
-                if (!channelMap.containsKey(hostName)) {
-                    ManagedChannel channel = this.initChannel(hostName);
-                    channelMap.put(hostName, channel);
-                    result = channel;
-                }
-            }
-        } else {
-            result = channelMap.get(hostName);
-        }
-        if (result != null) {
-            checkConnectionState(result, hostName);
-        }
-        return result;
-    }
-
-    private void checkConnectionState(ManagedChannel channel, String hostName) {
-        ConnectivityState state = channel.getState(false);
-        if (state == ConnectivityState.SHUTDOWN || state == ConnectivityState.TRANSIENT_FAILURE) {
-            channelMap.remove(hostName);
-            throw new ChannelException(String.format("host %s is not available", hostName));
-        }
-    }
-
-    private ManagedChannel initChannel(String hostName) {
-        Host host = hosts.stream()
-                .filter(h -> h.getName().equals(hostName))
-                .findFirst()
-                .orElseThrow(() -> new MissingResourceException("Unknown host Exception", "Host", hostName));
-        return NettyChannelBuilder.forAddress(host.getIp(), host.getRpcPort())
-                .negotiationType(NegotiationType.PLAINTEXT)
-                .build();
+        final String id = this.get(hostName).getId();
+        return this.fileServiceIdChannelMap.get(id);
     }
 }

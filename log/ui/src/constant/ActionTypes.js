@@ -2,6 +2,8 @@ export const IGNORE = 'IGNORE';
 export const INIT = "INIT";
 export const GOTO_LOGIN = 'GOTO_LOGIN';
 export const LOGIN = 'LOGIN';
+export const WS_ERROR = 'WS_ERROR';
+export const HTTP_ERROR = 'HTTP_ERROR';
 
 // directory request
 export const INTO_DIR = 'INTO_DIR';

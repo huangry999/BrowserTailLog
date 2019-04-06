@@ -1,20 +1,16 @@
 package com.log.fileservice.monitor;
 
 import com.log.fileservice.config.LogFileProperties;
-import com.log.fileservice.config.UiHost;
 import com.log.fileservice.config.bean.Path;
 import com.log.fileservice.grpc.EventType;
 import com.log.fileservice.grpc.FileEventNotification;
-import com.log.fileservice.grpc.FileEventNotificationServiceGrpc;
 import com.log.fileservice.grpc.FileType;
 import com.log.fileservice.monitor.monitor.Monitor;
 import com.log.fileservice.monitor.monitor.MonitorFactory;
 import com.log.fileservice.monitor.monitor.MonitorListener;
 import com.log.fileservice.monitor.monitor.MonitorParameter;
-import com.log.fileservice.reader.LogFileService;
-import io.grpc.ManagedChannel;
-import io.grpc.netty.NegotiationType;
-import io.grpc.netty.NettyChannelBuilder;
+import com.log.fileservice.notify.NotificationService;
+import com.log.fileservice.service.LogFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,9 +27,9 @@ import java.util.stream.Collectors;
 public class LogMonitor {
     private final ExecutorService executorService;
     private final Monitor monitor;
-    private final ManagedChannel managedChannel;
     @Value("${log-host.name}")
     private String hostName;
+    private final NotificationService notificationService;
 
     /**
      * release resources
@@ -43,23 +38,15 @@ public class LogMonitor {
         if (this.executorService != null) {
             this.executorService.shutdown();
         }
-        try {
-            managedChannel.shutdown().awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            log.error("shutdown gprc managedChannel error", e);
-        }
+        this.notificationService.destroy();
     }
 
     @Autowired
-    public LogMonitor(MonitorFactory factory, LogFileProperties logFileProperties, LogFileService logFileService, UiHost uiHost) {
+    public LogMonitor(MonitorFactory factory, LogFileProperties logFileProperties, LogFileService logFileService, NotificationService notificationService) {
         executorService = Executors.newCachedThreadPool();
         MonitorParameter parameter = new MonitorParameter();
         parameter.setRoots(logFileProperties.getPath().stream().map(Path::getPath).collect(Collectors.toList()));
         parameter.setFileFilter(logFileProperties.getFilter());
-        managedChannel = NettyChannelBuilder.forAddress(uiHost.getHost(), uiHost.getPort())
-                .negotiationType(NegotiationType.PLAINTEXT)
-                .build();
-        FileEventNotificationServiceGrpc.FileEventNotificationServiceFutureStub futureStub = FileEventNotificationServiceGrpc.newFutureStub(managedChannel);
         parameter.setMonitorListener(new MonitorListener() {
             @Override
             public void onDirectoryCreate(File directory) {
@@ -72,7 +59,7 @@ public class LogMonitor {
                             .setFileType(FileType.DIRECTORY)
                             .setFromHost(hostName)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
 
@@ -87,7 +74,7 @@ public class LogMonitor {
                             .setFileType(FileType.DIRECTORY)
                             .setFromHost(hostName)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
 
@@ -102,7 +89,7 @@ public class LogMonitor {
                             .setFileType(FileType.DIRECTORY)
                             .setFromHost(hostName)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
 
@@ -117,7 +104,7 @@ public class LogMonitor {
                             .setFileType(FileType.FILE)
                             .setFromHost(hostName)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
 
@@ -134,7 +121,7 @@ public class LogMonitor {
                             .setFromHost(hostName)
                             .setRefresh(refresh)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
 
@@ -150,11 +137,12 @@ public class LogMonitor {
                             .setFileType(FileType.FILE)
                             .setFromHost(hostName)
                             .build();
-                    futureStub.notify(notification);
+                    notificationService.sendNotification(notification);
                 }
             }
         });
         monitor = factory.newMonitor(parameter);
+        this.notificationService = notificationService;
     }
 
     /**

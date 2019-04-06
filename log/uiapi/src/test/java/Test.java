@@ -1,13 +1,9 @@
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter;
+import org.assertj.core.util.Lists;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
 public class Test {
 
@@ -16,5 +12,19 @@ public class Test {
         String d2 = "log/1.log";
         System.out.println(Arrays.toString(d1.split("[\\\\/]")));
         System.out.println(Arrays.toString(d2.split("[\\\\/]")));
+
+        String d = Lists.newArrayList(
+                "/usr/local/javaApp/log", "/usr/local/javaApp/logtimer/log")
+                .stream()
+                .filter(p -> {
+                    try {
+                        return FilenameUtils.directoryContains(p, "/usr/local/javaApp/logtimer/log/timer.log");
+                    } catch (IOException e) {
+                        return false;
+                    }
+                })
+                .findFirst()
+                .orElse(null);
+        System.out.println(d);
     }
 }

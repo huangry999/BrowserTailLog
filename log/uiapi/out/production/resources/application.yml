@@ -11,13 +11,11 @@ uiapi-properties:
     expire-minutes: 30
   window-size: 100
   shrink-threshold: 100
-  hosts:
-    - { ip: 127.0.0.1, name: Main Host, desc: 'test machine', rpc-port: 10903 }
   subscribe:
     log: true
     log-sampling-second: 10
 logging:
-  path: G:\systemlog
+  path: log
   level:
     root: info
     subscribe: info
@@ -25,4 +23,17 @@ spring:
   application:
     name: uiapi
 server:
-  address: '127.0.0.1'
+  address: 127.0.0.1
+  port: 8080
+eureka:
+  file-service-app-group-name: fileservice
+  server:
+    eviction-interval-timer-in-ms: 10000
+  instance:
+    non-secure-port: ${grpc.port}
+    appname: uiapi
+  client:
+    service-url:
+      defaultZone: http://${server.address}:${server.port}/eureka/
+  dashboard:
+    path: /eurekadashboard
