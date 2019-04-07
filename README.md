@@ -1,5 +1,5 @@
 # Tail Log By Browser
-[中文](https://github.com/huangry999/BrowserTailLog) | [English](https://github.com/huangry999/BrowserTailLog/blob/master/README_EN.md)<br/>
+[中文](https://github.com/huangry999/BrowserTailLog/blob/master/README-zh_CN.md) | [English](https://github.com/huangry999/BrowserTailLog)<br/>
 Without login server and any client, you could look over logs like *tail -f* in linux.
 ## Feature
 
