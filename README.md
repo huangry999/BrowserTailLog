@@ -30,6 +30,7 @@ Without login server and any client, you could look over logs like *tail -f* in 
 2. Make configuration，and run script of your platform in *bin* directory.
 
 [Online Demo](http://www.94hry.tech:10999)
+<br/>**Recommend running in PC browser**
 <br/>(Network maybe slow ...)
 
 ### Configuration
